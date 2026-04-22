@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #app {
+    height: 100%;
+  }
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-white hover:bg-accent-strong;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-ink-500 hover:bg-ink-100;
+  }
+  .btn-outline {
+    @apply btn border border-ink-200 bg-white text-ink-600 hover:bg-ink-50;
+  }
+  .card {
+    @apply rounded-xl bg-white shadow-card border border-ink-100/80;
+  }
+  .input {
+    @apply h-10 w-full rounded-lg border border-ink-200 bg-white px-3 text-sm text-ink-700 placeholder:text-ink-300 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30;
+  }
+  .label {
+    @apply block text-xs font-semibold uppercase tracking-wide text-ink-400 mb-1.5;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+  }
+  .table-base {
+    @apply w-full text-left text-sm;
+  }
+  .table-base th {
+    @apply py-2.5 px-3 text-xs font-semibold uppercase tracking-wide text-ink-400 border-b border-ink-100 bg-ink-50/60;
+  }
+  .table-base td {
+    @apply py-3 px-3 border-b border-ink-100/80 text-ink-600 align-middle;
+  }
+  .table-base tr:hover td {
+    @apply bg-ink-50/50;
+  }
+}
