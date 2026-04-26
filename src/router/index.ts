@@ -54,6 +54,12 @@ const routes: RouteRecordRaw[] = [
         name: "logs",
         component: () => import("@/views/LogsView.vue"),
         meta: { title: "로그 관리" }
+      },
+      {
+        path: "/announcements",
+        name: "announcements",
+        component: () => import("@/views/AnnouncementsView.vue"),
+        meta: { title: "공지 발송" }
       }
     ]
   },
