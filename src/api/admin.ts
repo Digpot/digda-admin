@@ -1,7 +1,5 @@
 import { http } from "./http";
 import type {
-  AdminActionLog,
-  AdminActionType,
   AdminColumnInfo,
   AdminDiary,
   AdminGroupRoom,
@@ -14,7 +12,11 @@ import type {
   AdminUser,
   DashboardSummary,
   GroupRoomAction,
-  Role
+  Role,
+  SendAnnouncementRequest,
+  SendAnnouncementResponse,
+  UserActionLog,
+  UserActionType
 } from "@/types/api";
 
 const API = "/api/admin";
@@ -86,7 +88,7 @@ export const adminApi = {
 
   searchLogs: (params: {
     actorId?: string;
-    action?: AdminActionType;
+    action?: UserActionType;
     from?: string;
     to?: string;
     keyword?: string;
@@ -94,6 +96,11 @@ export const adminApi = {
     size?: number;
   }) =>
     http
-      .get<AdminPageResponse<AdminActionLog>>(`${API}/logs`, { params })
+      .get<AdminPageResponse<UserActionLog>>(`${API}/logs`, { params })
+      .then((r) => r.data),
+
+  sendAnnouncement: (body: SendAnnouncementRequest) =>
+    http
+      .post<SendAnnouncementResponse>(`${API}/announcements`, body)
       .then((r) => r.data)
 };

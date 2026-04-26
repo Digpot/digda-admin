@@ -8,14 +8,14 @@ import {
 } from "@heroicons/vue/24/outline";
 import { adminApi } from "@/api/admin";
 import { extractErrorMessage } from "@/api/http";
-import type { AdminActionLog, DashboardSummary } from "@/types/api";
+import type { UserActionLog, DashboardSummary } from "@/types/api";
 import StatCard from "@/components/ui/StatCard.vue";
 import { formatDate, formatNumber, truncate } from "@/utils/format";
 
 const loading = ref(true);
 const errorMessage = ref<string | null>(null);
 const summary = ref<DashboardSummary | null>(null);
-const recentLogs = ref<AdminActionLog[]>([]);
+const recentLogs = ref<UserActionLog[]>([]);
 
 async function load() {
   loading.value = true;

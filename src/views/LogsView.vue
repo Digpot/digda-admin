@@ -2,21 +2,29 @@
 import { onMounted, ref } from "vue";
 import { adminApi } from "@/api/admin";
 import { extractErrorMessage } from "@/api/http";
-import type { AdminActionLog, AdminActionType } from "@/types/api";
+import type { UserActionLog, UserActionType } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
 import { formatDate, truncate } from "@/utils/format";
 
-const actions: AdminActionType[] = [
+const actions: UserActionType[] = [
   "LOGIN",
-  "UPDATE_USER_ROLE",
-  "CHANGE_GROUP_ROOM_STATUS",
+  "SIGNUP",
+  "LOGOUT",
+  "CREATE_DIARY",
   "DELETE_DIARY",
-  "VIEW_DB_TABLE",
+  "CREATE_SCHEDULE",
+  "DELETE_SCHEDULE",
+  "CREATE_COMMENT",
+  "CREATE_GROUP_ROOM",
+  "JOIN_GROUP_ROOM",
+  "LEAVE_GROUP_ROOM",
+  "TRANSFER_OWNER",
+  "CREATE_TODO",
   "OTHER"
 ];
 
 const actorId = ref("");
-const action = ref<AdminActionType | "">("");
+const action = ref<UserActionType | "">("");
 const from = ref("");
 const to = ref("");
 const keyword = ref("");
@@ -24,7 +32,7 @@ const page = ref(0);
 const size = ref(20);
 const totalElements = ref(0);
 const totalPages = ref(0);
-const rows = ref<AdminActionLog[]>([]);
+const rows = ref<UserActionLog[]>([]);
 const loading = ref(false);
 const errorMessage = ref<string | null>(null);
 

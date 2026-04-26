@@ -9,6 +9,7 @@ import {
   CalendarDaysIcon,
   TableCellsIcon,
   ClipboardDocumentListIcon,
+  MegaphoneIcon,
   Bars3Icon,
   ArrowRightOnRectangleIcon,
   BellIcon
@@ -27,7 +28,8 @@ const menu = [
   { to: "/diaries", label: "일기 관리", icon: BookOpenIcon },
   { to: "/schedules", label: "일정 관리", icon: CalendarDaysIcon },
   { to: "/db", label: "DB 테이블 조회", icon: TableCellsIcon },
-  { to: "/logs", label: "로그 관리", icon: ClipboardDocumentListIcon }
+  { to: "/logs", label: "로그 관리", icon: ClipboardDocumentListIcon },
+  { to: "/announcements", label: "공지 발송", icon: MegaphoneIcon }
 ];
 
 const pageTitle = computed(() => (route.meta.title as string | undefined) ?? "digda Admin");

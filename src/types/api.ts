@@ -123,20 +123,41 @@ export interface AdminTableRows {
   rows: Array<Record<string, unknown>>;
 }
 
-export type AdminActionType =
+export type UserActionType =
   | "LOGIN"
-  | "UPDATE_USER_ROLE"
-  | "CHANGE_GROUP_ROOM_STATUS"
+  | "SIGNUP"
+  | "LOGOUT"
+  | "CREATE_DIARY"
   | "DELETE_DIARY"
-  | "VIEW_DB_TABLE"
+  | "CREATE_SCHEDULE"
+  | "DELETE_SCHEDULE"
+  | "CREATE_COMMENT"
+  | "CREATE_GROUP_ROOM"
+  | "JOIN_GROUP_ROOM"
+  | "LEAVE_GROUP_ROOM"
+  | "TRANSFER_OWNER"
+  | "CREATE_TODO"
   | "OTHER";
 
-export interface AdminActionLog {
+export interface UserActionLog {
   logId: number;
   actorId: string | null;
-  action: AdminActionType;
+  action: UserActionType;
   targetType: string | null;
   targetId: string | null;
   detail: string | null;
   createdAt: string;
+}
+
+export type AnnouncementTarget = "ALL" | "USER_IDS";
+
+export interface SendAnnouncementRequest {
+  title: string;
+  body: string;
+  target: AnnouncementTarget;
+  userIds?: string[];
+}
+
+export interface SendAnnouncementResponse {
+  recipientCount: number;
 }
