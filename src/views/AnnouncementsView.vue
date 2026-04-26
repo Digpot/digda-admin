@@ -2,37 +2,86 @@
 import { computed, ref } from "vue";
 import { adminApi } from "@/api/admin";
 import { extractErrorMessage } from "@/api/http";
-import type { AnnouncementTarget } from "@/types/api";
+import type { AdminUser, AnnouncementTarget } from "@/types/api";
+import Modal from "@/components/ui/Modal.vue";
+import Pagination from "@/components/ui/Pagination.vue";
 
 const title = ref("");
 const body = ref("");
 const target = ref<AnnouncementTarget>("ALL");
-const userIdsRaw = ref("");
+
+const selectedUsers = ref<AdminUser[]>([]);
+const selectedIds = computed(() => new Set(selectedUsers.value.map((u) => u.userId)));
+
+const pickerOpen = ref(false);
+const pickerKeyword = ref("");
+const pickerRows = ref<AdminUser[]>([]);
+const pickerPage = ref(0);
+const pickerSize = ref(10);
+const pickerTotalPages = ref(0);
+const pickerTotalElements = ref(0);
+const pickerLoading = ref(false);
+const pickerError = ref<string | null>(null);
 
 const sending = ref(false);
 const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
 
-const parsedUserIds = computed(() =>
-  userIdsRaw.value
-    .split(/[\s,]+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0)
-);
-
 const canSend = computed(() => {
   if (!title.value.trim() || !body.value.trim()) return false;
-  if (target.value === "USER_IDS" && parsedUserIds.value.length === 0) return false;
+  if (target.value === "USER_IDS" && selectedUsers.value.length === 0) return false;
   return !sending.value;
 });
+
+async function loadPickerUsers() {
+  pickerLoading.value = true;
+  pickerError.value = null;
+  try {
+    const res = await adminApi.searchUsers({
+      keyword: pickerKeyword.value || undefined,
+      page: pickerPage.value,
+      size: pickerSize.value
+    });
+    pickerRows.value = res.content;
+    pickerTotalPages.value = res.totalPages;
+    pickerTotalElements.value = res.totalElements;
+  } catch (err) {
+    pickerError.value = extractErrorMessage(err);
+  } finally {
+    pickerLoading.value = false;
+  }
+}
+
+function openPicker() {
+  pickerOpen.value = true;
+  if (pickerRows.value.length === 0) loadPickerUsers();
+}
+
+function toggleUser(user: AdminUser) {
+  if (selectedIds.value.has(user.userId)) {
+    selectedUsers.value = selectedUsers.value.filter((u) => u.userId !== user.userId);
+  } else {
+    selectedUsers.value = [...selectedUsers.value, user];
+  }
+}
+
+function removeSelected(userId: string) {
+  selectedUsers.value = selectedUsers.value.filter((u) => u.userId !== userId);
+}
+
+function clearSelected() {
+  selectedUsers.value = [];
+}
 
 async function send() {
   errorMessage.value = null;
   successMessage.value = null;
 
-  if (!confirm(target.value === "ALL" ? "전체 사용자에게 공지를 발송하시겠습니까?" : `${parsedUserIds.value.length}명에게 공지를 발송하시겠습니까?`)) {
-    return;
-  }
+  const confirmMsg =
+    target.value === "ALL"
+      ? "전체 사용자에게 공지를 발송하시겠습니까?"
+      : `${selectedUsers.value.length}명에게 공지를 발송하시겠습니까?`;
+  if (!confirm(confirmMsg)) return;
 
   sending.value = true;
   try {
@@ -40,12 +89,13 @@ async function send() {
       title: title.value.trim(),
       body: body.value.trim(),
       target: target.value,
-      userIds: target.value === "USER_IDS" ? parsedUserIds.value : undefined
+      userIds:
+        target.value === "USER_IDS" ? selectedUsers.value.map((u) => u.userId) : undefined
     });
     successMessage.value = `${res.recipientCount}명에게 발송되었습니다.`;
     title.value = "";
     body.value = "";
-    userIdsRaw.value = "";
+    selectedUsers.value = [];
   } catch (err) {
     errorMessage.value = extractErrorMessage(err, "공지 발송에 실패했습니다.");
   } finally {
@@ -87,19 +137,48 @@ async function send() {
           </label>
           <label class="flex items-center gap-2">
             <input v-model="target" type="radio" value="USER_IDS" />
-            <span>특정 유저 (UUID)</span>
+            <span>특정 유저 선택</span>
           </label>
         </div>
       </div>
 
-      <div v-if="target === 'USER_IDS'">
-        <label class="label">유저 UUID 목록</label>
-        <textarea
-          v-model="userIdsRaw"
-          class="input min-h-[100px] font-mono text-xs"
-          placeholder="쉼표 또는 줄바꿈으로 구분 (예: a1b2c3d4-..., e5f6...)"
-        ></textarea>
-        <div class="text-xs text-ink-400 mt-1">{{ parsedUserIds.length }}명 지정됨</div>
+      <div v-if="target === 'USER_IDS'" class="space-y-2">
+        <div class="flex items-center gap-2">
+          <button type="button" class="btn-primary" @click="openPicker">
+            유저 선택
+          </button>
+          <button
+            v-if="selectedUsers.length"
+            type="button"
+            class="btn-ghost text-sm"
+            @click="clearSelected"
+          >
+            전체 해제
+          </button>
+          <span class="text-sm text-ink-500 ml-auto">{{ selectedUsers.length }}명 선택됨</span>
+        </div>
+
+        <div
+          v-if="selectedUsers.length"
+          class="border border-ink-100 rounded-lg p-3 max-h-48 overflow-y-auto flex flex-wrap gap-2"
+        >
+          <span
+            v-for="u in selectedUsers"
+            :key="u.userId"
+            class="inline-flex items-center gap-2 rounded-full bg-ink-100 px-3 py-1 text-xs"
+          >
+            <span class="font-medium text-ink-700">{{ u.name }}</span>
+            <span class="text-ink-400">{{ u.email ?? "-" }}</span>
+            <button
+              type="button"
+              class="text-ink-400 hover:text-rose-500"
+              @click="removeSelected(u.userId)"
+            >
+              ×
+            </button>
+          </span>
+        </div>
+        <p v-else class="text-xs text-ink-400">유저를 선택해주세요.</p>
       </div>
 
       <p v-if="errorMessage" class="text-sm text-rose-600">{{ errorMessage }}</p>
@@ -111,5 +190,86 @@ async function send() {
         </button>
       </div>
     </div>
+
+    <Modal :open="pickerOpen" title="유저 선택" @close="pickerOpen = false">
+      <div class="space-y-3">
+        <form
+          class="flex gap-2"
+          @submit.prevent="
+            () => {
+              pickerPage = 0;
+              loadPickerUsers();
+            }
+          "
+        >
+          <input
+            v-model="pickerKeyword"
+            class="input flex-1"
+            placeholder="이메일 / 이름 검색"
+          />
+          <button type="submit" class="btn-primary">검색</button>
+        </form>
+
+        <p v-if="pickerError" class="text-sm text-rose-600">{{ pickerError }}</p>
+
+        <div class="border border-ink-100 rounded-lg max-h-80 overflow-y-auto">
+          <table class="table-base">
+            <thead class="sticky top-0 bg-white">
+              <tr>
+                <th class="w-10"></th>
+                <th>이름</th>
+                <th>이메일</th>
+                <th class="w-16">권한</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="pickerLoading">
+                <td colspan="4" class="text-center text-ink-400 py-6">불러오는 중...</td>
+              </tr>
+              <tr v-else-if="!pickerRows.length">
+                <td colspan="4" class="text-center text-ink-400 py-6">데이터가 없습니다.</td>
+              </tr>
+              <tr
+                v-for="u in pickerRows"
+                :key="u.userId"
+                class="cursor-pointer hover:bg-ink-50"
+                @click="toggleUser(u)"
+              >
+                <td>
+                  <input
+                    type="checkbox"
+                    :checked="selectedIds.has(u.userId)"
+                    @click.stop="toggleUser(u)"
+                  />
+                </td>
+                <td class="text-ink-700">{{ u.name }}</td>
+                <td class="text-ink-500">{{ u.email ?? "-" }}</td>
+                <td>
+                  <span class="badge bg-ink-100 text-ink-600 text-[10px]">{{ u.role }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <Pagination
+          :page="pickerPage"
+          :total-pages="pickerTotalPages"
+          :total-elements="pickerTotalElements"
+          @change="
+            (p) => {
+              pickerPage = p;
+              loadPickerUsers();
+            }
+          "
+        />
+
+        <div class="flex justify-end pt-2 border-t border-ink-100">
+          <button type="button" class="btn-primary" @click="pickerOpen = false">
+            완료 ({{ selectedUsers.length }}명)
+          </button>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
