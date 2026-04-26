@@ -123,6 +123,14 @@ export interface AdminTableRows {
   rows: Array<Record<string, unknown>>;
 }
 
+export interface AdminWriteResult {
+  affected: number;
+}
+
+export interface AdminUpsertRowRequest {
+  values: Record<string, string | null>;
+}
+
 export type UserActionType =
   | "LOGIN"
   | "SIGNUP"

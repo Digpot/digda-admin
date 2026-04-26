@@ -9,7 +9,9 @@ import type {
   AdminSchedule,
   AdminTableInfo,
   AdminTableRows,
+  AdminUpsertRowRequest,
   AdminUser,
+  AdminWriteResult,
   DashboardSummary,
   GroupRoomAction,
   Role,
@@ -84,6 +86,19 @@ export const adminApi = {
   ) =>
     http
       .get<AdminTableRows>(`${API}/db/tables/${name}/rows`, { params })
+      .then((r) => r.data),
+
+  insertRow: (name: string, body: AdminUpsertRowRequest) =>
+    http.post<AdminWriteResult>(`${API}/db/tables/${name}/rows`, body).then((r) => r.data),
+
+  updateRow: (name: string, pk: Record<string, string>, body: AdminUpsertRowRequest) =>
+    http
+      .patch<AdminWriteResult>(`${API}/db/tables/${name}/rows`, body, { params: pk })
+      .then((r) => r.data),
+
+  deleteRow: (name: string, pk: Record<string, string>) =>
+    http
+      .delete<AdminWriteResult>(`${API}/db/tables/${name}/rows`, { params: pk })
       .then((r) => r.data),
 
   searchLogs: (params: {

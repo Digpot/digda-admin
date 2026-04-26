@@ -4,6 +4,7 @@ import { adminApi } from "@/api/admin";
 import { extractErrorMessage } from "@/api/http";
 import type { AdminColumnInfo, AdminTableInfo, AdminTableRows } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
+import Modal from "@/components/ui/Modal.vue";
 import { formatNumber } from "@/utils/format";
 
 const tables = ref<AdminTableInfo[]>([]);
@@ -17,6 +18,15 @@ const direction = ref<"ASC" | "DESC">("ASC");
 const loading = ref(false);
 const errorMessage = ref<string | null>(null);
 const filter = ref("");
+
+const editorOpen = ref(false);
+const editorMode = ref<"create" | "edit">("create");
+const editorValues = ref<Record<string, string>>({});
+const editorOriginalPk = ref<Record<string, string>>({});
+const editorBusy = ref(false);
+const editorError = ref<string | null>(null);
+
+const pkColumns = computed(() => columns.value.filter((c) => c.columnKey === "PRI").map((c) => c.columnName));
 
 const filteredTables = computed(() => {
   const q = filter.value.trim().toLowerCase();
@@ -89,6 +99,84 @@ function renderCell(value: unknown): string {
   }
   const s = String(value);
   return s.length > 80 ? `${s.slice(0, 80)}…` : s;
+}
+
+function valueToInput(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+  return String(value);
+}
+
+function openCreate() {
+  editorMode.value = "create";
+  editorValues.value = Object.fromEntries(columns.value.map((c) => [c.columnName, ""]));
+  editorOriginalPk.value = {};
+  editorError.value = null;
+  editorOpen.value = true;
+}
+
+function openEdit(row: Record<string, unknown>) {
+  editorMode.value = "edit";
+  editorValues.value = Object.fromEntries(
+    columns.value.map((c) => [c.columnName, valueToInput(row[c.columnName])])
+  );
+  editorOriginalPk.value = Object.fromEntries(
+    pkColumns.value.map((pk) => [pk, valueToInput(row[pk])])
+  );
+  editorError.value = null;
+  editorOpen.value = true;
+}
+
+function buildValuesPayload(): Record<string, string | null> {
+  const out: Record<string, string | null> = {};
+  for (const [k, v] of Object.entries(editorValues.value)) {
+    out[k] = v === "" ? null : v;
+  }
+  return out;
+}
+
+async function saveEditor() {
+  if (!selected.value) return;
+  editorBusy.value = true;
+  editorError.value = null;
+  try {
+    if (editorMode.value === "create") {
+      await adminApi.insertRow(selected.value, { values: buildValuesPayload() });
+    } else {
+      const updateValues = { ...buildValuesPayload() };
+      // PK는 update 페이로드에서 제거 (백엔드도 제외하지만 명시적으로)
+      for (const pk of pkColumns.value) delete updateValues[pk];
+      await adminApi.updateRow(selected.value, editorOriginalPk.value, { values: updateValues });
+    }
+    editorOpen.value = false;
+    await loadDetail();
+  } catch (err) {
+    editorError.value = extractErrorMessage(err);
+  } finally {
+    editorBusy.value = false;
+  }
+}
+
+async function deleteRow(row: Record<string, unknown>) {
+  if (!selected.value) return;
+  if (pkColumns.value.length === 0) {
+    alert("PK가 없는 테이블은 삭제할 수 없습니다.");
+    return;
+  }
+  if (!confirm("이 행을 삭제하시겠습니까?")) return;
+  const pk = Object.fromEntries(pkColumns.value.map((c) => [c, valueToInput(row[c])]));
+  try {
+    await adminApi.deleteRow(selected.value, pk);
+    await loadDetail();
+  } catch (err) {
+    errorMessage.value = extractErrorMessage(err);
+  }
 }
 
 watch([page, size], () => {
@@ -186,8 +274,9 @@ onMounted(loadTables);
                 ({{ formatNumber(rowData.totalElements) }}행)
               </span>
             </h2>
-            <div class="text-xs text-ink-400">
-              헤더 클릭 시 정렬 · size 최대 200
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-ink-400">헤더 클릭 시 정렬</span>
+              <button class="btn-primary text-xs" @click="openCreate">+ 행 추가</button>
             </div>
           </div>
           <div class="overflow-x-auto">
@@ -205,11 +294,12 @@ onMounted(loadTables);
                       {{ direction === "ASC" ? "▲" : "▼" }}
                     </span>
                   </th>
+                  <th class="w-32 text-right">작업</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="!rowData.rows.length">
-                  <td :colspan="rowData.columns.length" class="text-center text-ink-400 py-8">
+                  <td :colspan="rowData.columns.length + 1" class="text-center text-ink-400 py-8">
                     데이터가 없습니다.
                   </td>
                 </tr>
@@ -220,6 +310,15 @@ onMounted(loadTables);
                     class="font-mono text-xs text-ink-600 whitespace-nowrap max-w-xs overflow-hidden text-ellipsis"
                   >
                     {{ renderCell(row[col]) }}
+                  </td>
+                  <td class="text-right whitespace-nowrap">
+                    <button class="btn-ghost text-xs" @click="openEdit(row)">수정</button>
+                    <button
+                      class="btn-ghost text-xs text-rose-500 hover:bg-rose-50"
+                      @click="deleteRow(row)"
+                    >
+                      삭제
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -239,5 +338,36 @@ onMounted(loadTables);
         </div>
       </template>
     </section>
+
+    <Modal
+      :open="editorOpen"
+      :title="editorMode === 'create' ? '행 추가' : '행 수정'"
+      @close="editorOpen = false"
+    >
+      <div class="space-y-3 max-h-[70vh] overflow-y-auto">
+        <div v-for="c in columns" :key="c.columnName">
+          <label class="label flex items-center gap-2">
+            <span>{{ c.columnName }}</span>
+            <span v-if="c.columnKey" class="badge bg-accent/10 text-accent text-[10px]">
+              {{ c.columnKey }}
+            </span>
+            <span class="text-ink-400 font-normal text-[11px] font-mono">{{ c.columnType }}</span>
+          </label>
+          <input
+            v-model="editorValues[c.columnName]"
+            class="input"
+            :placeholder="c.nullable ? '비우면 NULL' : ''"
+            :disabled="editorMode === 'edit' && c.columnKey === 'PRI'"
+          />
+        </div>
+        <p v-if="editorError" class="text-sm text-rose-600">{{ editorError }}</p>
+      </div>
+      <div class="flex justify-end gap-2 pt-3 border-t border-ink-100 mt-3">
+        <button type="button" class="btn-ghost" @click="editorOpen = false">취소</button>
+        <button type="button" class="btn-primary" :disabled="editorBusy" @click="saveEditor">
+          {{ editorBusy ? "저장 중..." : "저장" }}
+        </button>
+      </div>
+    </Modal>
   </div>
 </template>
