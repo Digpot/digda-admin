@@ -169,3 +169,12 @@ export interface SendAnnouncementRequest {
 export interface SendAnnouncementResponse {
   recipientCount: number;
 }
+
+export interface AdminAnnouncement {
+  announcementId: number;
+  title: string;
+  body: string;
+  targetType: AnnouncementTarget;
+  recipientCount: number;
+  createdAt: string;
+}

@@ -1,5 +1,6 @@
 import { http } from "./http";
 import type {
+  AdminAnnouncement,
   AdminColumnInfo,
   AdminDiary,
   AdminGroupRoom,
@@ -117,5 +118,10 @@ export const adminApi = {
   sendAnnouncement: (body: SendAnnouncementRequest) =>
     http
       .post<SendAnnouncementResponse>(`${API}/announcements`, body)
+      .then((r) => r.data),
+
+  searchAnnouncements: (params: { keyword?: string; page?: number; size?: number }) =>
+    http
+      .get<AdminPageResponse<AdminAnnouncement>>(`${API}/announcements`, { params })
       .then((r) => r.data)
 };

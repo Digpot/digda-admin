@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { adminApi } from "@/api/admin";
 import { extractErrorMessage } from "@/api/http";
-import type { AdminUser, AnnouncementTarget } from "@/types/api";
+import type { AdminAnnouncement, AdminUser, AnnouncementTarget } from "@/types/api";
 import Modal from "@/components/ui/Modal.vue";
 import Pagination from "@/components/ui/Pagination.vue";
+import { formatDate, formatNumber, truncate } from "@/utils/format";
+
+type Tab = "send" | "list";
+const tab = ref<Tab>("send");
 
 const title = ref("");
 const body = ref("");
@@ -26,6 +30,16 @@ const pickerError = ref<string | null>(null);
 const sending = ref(false);
 const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
+
+const listKeyword = ref("");
+const listRows = ref<AdminAnnouncement[]>([]);
+const listPage = ref(0);
+const listSize = ref(20);
+const listTotalPages = ref(0);
+const listTotalElements = ref(0);
+const listLoading = ref(false);
+const listError = ref<string | null>(null);
+const detail = ref<AdminAnnouncement | null>(null);
 
 const canSend = computed(() => {
   if (!title.value.trim() || !body.value.trim()) return false;
@@ -73,6 +87,30 @@ function clearSelected() {
   selectedUsers.value = [];
 }
 
+async function loadList() {
+  listLoading.value = true;
+  listError.value = null;
+  try {
+    const res = await adminApi.searchAnnouncements({
+      keyword: listKeyword.value || undefined,
+      page: listPage.value,
+      size: listSize.value
+    });
+    listRows.value = res.content;
+    listTotalPages.value = res.totalPages;
+    listTotalElements.value = res.totalElements;
+  } catch (err) {
+    listError.value = extractErrorMessage(err);
+  } finally {
+    listLoading.value = false;
+  }
+}
+
+function switchTab(next: Tab) {
+  tab.value = next;
+  if (next === "list" && listRows.value.length === 0) loadList();
+}
+
 async function send() {
   errorMessage.value = null;
   successMessage.value = null;
@@ -96,17 +134,50 @@ async function send() {
     title.value = "";
     body.value = "";
     selectedUsers.value = [];
+    listRows.value = [];
+    if (tab.value === "list") loadList();
   } catch (err) {
     errorMessage.value = extractErrorMessage(err, "공지 발송에 실패했습니다.");
   } finally {
     sending.value = false;
   }
 }
+
+onMounted(() => {
+  // 초기에는 send 탭이라 리스트는 첫 클릭 때 로드
+});
 </script>
 
 <template>
   <div class="space-y-4">
-    <div class="card p-6 space-y-4 max-w-3xl">
+    <div class="flex gap-2 border-b border-ink-100">
+      <button
+        type="button"
+        class="px-4 py-2 text-sm font-medium border-b-2"
+        :class="
+          tab === 'send'
+            ? 'border-primary-500 text-primary-600'
+            : 'border-transparent text-ink-500 hover:text-ink-700'
+        "
+        @click="switchTab('send')"
+      >
+        공지 발송
+      </button>
+      <button
+        type="button"
+        class="px-4 py-2 text-sm font-medium border-b-2"
+        :class="
+          tab === 'list'
+            ? 'border-primary-500 text-primary-600'
+            : 'border-transparent text-ink-500 hover:text-ink-700'
+        "
+        @click="switchTab('list')"
+      >
+        공지 목록
+      </button>
+    </div>
+
+    <div v-if="tab === 'send'" class="card p-6 space-y-4 max-w-3xl">
       <div>
         <label class="label">제목</label>
         <input
@@ -191,6 +262,82 @@ async function send() {
       </div>
     </div>
 
+    <div v-else class="space-y-3">
+      <div class="card p-4">
+        <form
+          class="flex gap-2"
+          @submit.prevent="
+            () => {
+              listPage = 0;
+              loadList();
+            }
+          "
+        >
+          <input
+            v-model="listKeyword"
+            class="input flex-1"
+            placeholder="제목 / 본문 검색"
+          />
+          <button type="submit" class="btn-primary">검색</button>
+        </form>
+      </div>
+
+      <p v-if="listError" class="text-sm text-rose-600">{{ listError }}</p>
+
+      <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="table-base">
+            <thead>
+              <tr>
+                <th class="w-44">발송 시각</th>
+                <th>제목</th>
+                <th>본문</th>
+                <th class="w-24">대상</th>
+                <th class="w-24 text-right">수신자</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="listLoading">
+                <td colspan="5" class="text-center text-ink-400 py-8">불러오는 중...</td>
+              </tr>
+              <tr v-else-if="!listRows.length">
+                <td colspan="5" class="text-center text-ink-400 py-8">데이터가 없습니다.</td>
+              </tr>
+              <tr
+                v-for="a in listRows"
+                :key="a.announcementId"
+                class="cursor-pointer hover:bg-ink-50"
+                @click="detail = a"
+              >
+                <td class="tabular-nums text-ink-500">{{ formatDate(a.createdAt) }}</td>
+                <td class="text-ink-700 font-medium">{{ a.title }}</td>
+                <td class="text-ink-500">{{ truncate(a.body, 80) }}</td>
+                <td>
+                  <span class="badge bg-ink-100 text-ink-600 text-[10px]">{{ a.targetType }}</span>
+                </td>
+                <td class="text-right tabular-nums text-ink-700">
+                  {{ formatNumber(a.recipientCount) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="px-4">
+          <Pagination
+            :page="listPage"
+            :total-pages="listTotalPages"
+            :total-elements="listTotalElements"
+            @change="
+              (p) => {
+                listPage = p;
+                loadList();
+              }
+            "
+          />
+        </div>
+      </div>
+    </div>
+
     <Modal :open="pickerOpen" title="유저 선택" @close="pickerOpen = false">
       <div class="space-y-3">
         <form
@@ -268,6 +415,26 @@ async function send() {
           <button type="button" class="btn-primary" @click="pickerOpen = false">
             완료 ({{ selectedUsers.length }}명)
           </button>
+        </div>
+      </div>
+    </Modal>
+
+    <Modal :open="!!detail" title="공지 상세" @close="detail = null">
+      <div v-if="detail" class="space-y-3 text-sm">
+        <div class="flex items-center gap-2 text-ink-500">
+          <span class="badge bg-ink-100 text-ink-600 text-[10px]">{{ detail.targetType }}</span>
+          <span>{{ formatDate(detail.createdAt) }}</span>
+          <span class="ml-auto">수신자 {{ formatNumber(detail.recipientCount) }}명</span>
+        </div>
+        <div>
+          <div class="label">제목</div>
+          <div class="text-ink-800 font-medium">{{ detail.title }}</div>
+        </div>
+        <div>
+          <div class="label">본문</div>
+          <div class="whitespace-pre-wrap text-ink-700 border border-ink-100 rounded-lg p-3 bg-ink-50">
+            {{ detail.body }}
+          </div>
         </div>
       </div>
     </Modal>
