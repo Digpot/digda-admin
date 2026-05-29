@@ -1,6 +1,7 @@
 import { http } from "./http";
 import type {
   AdminAnnouncement,
+  AdminCharacter,
   AdminColumnInfo,
   AdminDiary,
   AdminGroupRoom,
@@ -10,6 +11,7 @@ import type {
   AdminSchedule,
   AdminTableInfo,
   AdminTableRows,
+  AdminUpdateCharacterRequest,
   AdminUpsertRowRequest,
   AdminUser,
   AdminWriteResult,
@@ -123,5 +125,27 @@ export const adminApi = {
   searchAnnouncements: (params: { keyword?: string; page?: number; size?: number }) =>
     http
       .get<AdminPageResponse<AdminAnnouncement>>(`${API}/announcements`, { params })
+      .then((r) => r.data),
+
+  // ── Character (Mochi) ──
+
+  searchCharacters: (params: {
+    keyword?: string;
+    includeDeletedGroups?: boolean;
+    page?: number;
+    size?: number;
+  }) =>
+    http
+      .get<AdminPageResponse<AdminCharacter>>(`${API}/characters`, { params })
+      .then((r) => r.data),
+
+  getCharacter: (groupRoomId: number) =>
+    http
+      .get<AdminCharacter>(`${API}/characters/${groupRoomId}`)
+      .then((r) => r.data),
+
+  updateCharacter: (groupRoomId: number, body: AdminUpdateCharacterRequest) =>
+    http
+      .patch<AdminCharacter>(`${API}/characters/${groupRoomId}`, body)
       .then((r) => r.data)
 };

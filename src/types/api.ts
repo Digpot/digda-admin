@@ -178,3 +178,38 @@ export interface AdminAnnouncement {
   recipientCount: number;
   createdAt: string;
 }
+
+// ── Character (Mochi) admin ──
+
+export type CharacterStage =
+  | "EGG"
+  | "SPROUT"
+  | "BLOOM"
+  | "BLOSSOM"
+  | "GLOW"
+  | "MASTER";
+
+export interface AdminCharacter {
+  characterId: number;
+  groupRoomId: number;
+  groupRoomName: string;
+  ownerName: string;
+  groupRoomDeletedAt: string | null;
+  stage: CharacterStage;
+  stageDisplayName: string;
+  level: number;
+  exp: number;
+  expForNextLevel: number;
+  coin: number;
+  maxLevelReached: boolean;
+  dikoUnlocked: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminUpdateCharacterRequest {
+  level?: number;
+  coin?: number;
+  dikoUnlocked?: boolean;
+}
+
