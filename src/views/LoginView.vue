@@ -42,8 +42,8 @@ async function onSubmit() {
       </div>
       <div class="relative z-10 p-14 flex flex-col justify-between text-white">
         <div class="flex items-center gap-3">
-          <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-accent to-rose-400"></div>
-          <span class="text-sm font-semibold tracking-wider">digda · Admin</span>
+          <img src="/favicon.svg" alt="디그팟" class="h-9 w-9 rounded-lg" />
+          <span class="text-sm font-semibold tracking-wider">디그팟 · Admin</span>
         </div>
         <div class="space-y-4 max-w-md">
           <h2 class="text-3xl font-semibold leading-tight">
@@ -51,10 +51,10 @@ async function onSubmit() {
           </h2>
           <p class="text-sm text-ink-200/90 leading-relaxed">
             사용자·그룹방·일기·일정부터 DB 메타데이터와 관리자 행위 로그까지,
-            digda 백엔드의 모든 운영 지표를 모아보세요.
+            디그팟 백엔드의 모든 운영 지표를 모아보세요.
           </p>
         </div>
-        <p class="text-xs text-ink-300/70">© digda team</p>
+        <p class="text-xs text-ink-300/70">© 디그팟 team</p>
       </div>
     </div>
 

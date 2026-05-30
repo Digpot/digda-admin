@@ -34,7 +34,7 @@ const menu = [
 ];
 
 const pageTitle = computed(
-  () => (route.meta.title as string | undefined) ?? "digda Admin"
+  () => (route.meta.title as string | undefined) ?? "디그팟 Admin"
 );
 const profileOpen = ref(false);
 const profileRef = ref<HTMLElement | null>(null);
@@ -70,12 +70,16 @@ onBeforeUnmount(() => {
       :class="collapsed ? 'w-[72px]' : 'w-[232px]'"
     >
       <div class="h-16 flex items-center gap-3 px-5 border-b border-white/5">
-        <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-accent to-rose-400 shrink-0" />
+        <img
+          src="/favicon.svg"
+          alt="디그팟"
+          class="h-8 w-8 rounded-lg shrink-0"
+        />
         <span
           v-if="!collapsed"
           class="text-sm font-semibold tracking-wide text-white whitespace-nowrap"
         >
-          digda · Admin
+          디그팟 · Admin
         </span>
       </div>
       <nav class="flex-1 py-4 space-y-0.5">
