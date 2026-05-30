@@ -272,7 +272,7 @@ onMounted(load);
             {{ editTarget.groupRoomId }}
           </p>
         </div>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="label">레벨 (1-20)</label>
             <input
@@ -287,7 +287,7 @@ onMounted(load);
             </p>
           </div>
           <div>
-            <label class="label">EXP (포인트)</label>
+            <label class="label">경험치 (EXP)</label>
             <input
               v-model.number="editExp"
               type="number"
@@ -295,7 +295,7 @@ onMounted(load);
               class="input"
             />
             <p class="mt-1 text-xs text-ink-400">
-              현재 레벨 내 포인트. 구간 밖은 자동 보정.
+              현재 레벨 내 경험치. 구간 밖은 자동 보정.
             </p>
           </div>
           <div>
