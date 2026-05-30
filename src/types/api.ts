@@ -209,6 +209,7 @@ export interface AdminCharacter {
 
 export interface AdminUpdateCharacterRequest {
   level?: number;
+  exp?: number;
   coin?: number;
   dikoUnlocked?: boolean;
 }

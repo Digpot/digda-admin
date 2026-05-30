@@ -22,6 +22,7 @@ const errorMessage = ref<string | null>(null);
 
 const editTarget = ref<AdminCharacter | null>(null);
 const editLevel = ref<number>(1);
+const editExp = ref<number>(0);
 const editCoin = ref<number>(0);
 const editDikoUnlocked = ref<boolean>(false);
 const saving = ref(false);
@@ -57,6 +58,7 @@ function onSearch() {
 function openEdit(row: AdminCharacter) {
   editTarget.value = row;
   editLevel.value = row.level;
+  editExp.value = row.exp;
   editCoin.value = row.coin;
   editDikoUnlocked.value = row.dikoUnlocked;
 }
@@ -71,6 +73,7 @@ const dirtyPayload = computed<AdminUpdateCharacterRequest>(() => {
   if (!t) return {};
   const out: AdminUpdateCharacterRequest = {};
   if (editLevel.value !== t.level) out.level = editLevel.value;
+  if (editExp.value !== t.exp) out.exp = editExp.value;
   if (editCoin.value !== t.coin) out.coin = editCoin.value;
   if (editDikoUnlocked.value !== t.dikoUnlocked)
     out.dikoUnlocked = editDikoUnlocked.value;
@@ -269,7 +272,7 @@ onMounted(load);
             {{ editTarget.groupRoomId }}
           </p>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="label">레벨 (1-20)</label>
             <input
@@ -280,7 +283,19 @@ onMounted(load);
               class="input"
             />
             <p class="mt-1 text-xs text-ink-400">
-              변경 시 단계와 EXP 가 자동 정합됩니다.
+              변경 시 단계·EXP 자동 정합.
+            </p>
+          </div>
+          <div>
+            <label class="label">EXP (포인트)</label>
+            <input
+              v-model.number="editExp"
+              type="number"
+              min="0"
+              class="input"
+            />
+            <p class="mt-1 text-xs text-ink-400">
+              현재 레벨 내 포인트. 구간 밖은 자동 보정.
             </p>
           </div>
           <div>
