@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { RouterView, useRoute, useRouter } from "vue-router";
 import {
   Squares2X2Icon,
@@ -19,7 +19,11 @@ import { useAuthStore } from "@/stores/auth";
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
+
+// 데스크톱: 사이드바 접기(아이콘만). 모바일: 오프캔버스 드로어.
 const collapsed = ref(false);
+const mobileOpen = ref(false);
+const isDesktop = ref(true);
 
 const menu = [
   { to: "/dashboard", label: "대시보드", icon: Squares2X2Icon },
@@ -39,8 +43,12 @@ const pageTitle = computed(
 const profileOpen = ref(false);
 const profileRef = ref<HTMLElement | null>(null);
 
+// 데스크톱에선 라벨을 접을 수 있고, 모바일 드로어에선 항상 라벨 노출.
+const showLabels = computed(() => !isDesktop.value || !collapsed.value);
+
 function toggle() {
-  collapsed.value = !collapsed.value;
+  if (isDesktop.value) collapsed.value = !collapsed.value;
+  else mobileOpen.value = !mobileOpen.value;
 }
 
 function logout() {
@@ -54,44 +62,70 @@ function onDocClick(e: MouseEvent) {
   if (root && !root.contains(e.target as Node)) profileOpen.value = false;
 }
 
+let mq: MediaQueryList | null = null;
+function applyMq(e: MediaQueryList | MediaQueryListEvent) {
+  isDesktop.value = e.matches;
+  if (e.matches) mobileOpen.value = false; // 데스크톱 전환 시 드로어 닫기
+}
+
+// 페이지 이동 시 모바일 드로어 자동 닫기
+watch(
+  () => route.fullPath,
+  () => {
+    mobileOpen.value = false;
+  }
+);
+
 onMounted(() => {
+  mq = window.matchMedia("(min-width: 1024px)");
+  applyMq(mq);
+  mq.addEventListener("change", applyMq);
   document.addEventListener("click", onDocClick);
 });
 
 onBeforeUnmount(() => {
+  mq?.removeEventListener("change", applyMq);
   document.removeEventListener("click", onDocClick);
 });
 </script>
 
 <template>
   <div class="flex min-h-screen bg-ink-50">
+    <!-- 모바일 드로어 백드롭 -->
+    <div
+      v-if="mobileOpen"
+      class="fixed inset-0 z-30 bg-black/40 lg:hidden"
+      @click="mobileOpen = false"
+    />
+
+    <!-- 사이드바: 데스크톱 정적 / 모바일 오프캔버스 -->
     <aside
-      class="shrink-0 bg-ink-950 text-ink-100 transition-all duration-200 flex flex-col"
-      :class="collapsed ? 'w-[72px]' : 'w-[232px]'"
+      class="fixed lg:static inset-y-0 left-0 z-40 w-[264px] shrink-0 bg-ink-950 text-ink-100 flex flex-col transition-transform duration-200 lg:transition-[width]"
+      :class="[
+        collapsed ? 'lg:w-[72px]' : 'lg:w-[232px]',
+        mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      ]"
     >
       <div class="h-16 flex items-center gap-3 px-5 border-b border-white/5">
-        <img
-          src="/favicon.svg"
-          alt="디그팟"
-          class="h-8 w-8 rounded-lg shrink-0"
-        />
+        <img src="/favicon.svg" alt="디그팟" class="h-8 w-8 rounded-lg shrink-0" />
         <span
-          v-if="!collapsed"
+          v-if="showLabels"
           class="text-sm font-semibold tracking-wide text-white whitespace-nowrap"
         >
           디그팟 · Admin
         </span>
       </div>
-      <nav class="flex-1 py-4 space-y-0.5">
+      <nav class="flex-1 py-4 space-y-0.5 overflow-y-auto">
         <RouterLink
           v-for="item in menu"
           :key="item.to"
           :to="item.to"
           class="group flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-sm font-medium transition text-ink-300 hover:bg-white/5 hover:text-white"
           active-class="!bg-white/10 !text-white"
+          @click="mobileOpen = false"
         >
           <component :is="item.icon" class="h-5 w-5 shrink-0" />
-          <span v-if="!collapsed" class="whitespace-nowrap">{{ item.label }}</span>
+          <span v-if="showLabels" class="whitespace-nowrap">{{ item.label }}</span>
         </RouterLink>
       </nav>
       <div class="px-4 pb-4">
@@ -101,20 +135,26 @@ onBeforeUnmount(() => {
           @click="logout"
         >
           <ArrowRightOnRectangleIcon class="h-5 w-5 shrink-0" />
-          <span v-if="!collapsed">로그아웃</span>
+          <span v-if="showLabels">로그아웃</span>
         </button>
       </div>
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0">
       <header
-        class="h-16 bg-white border-b border-ink-100 flex items-center justify-between px-6 sticky top-0 z-10"
+        class="h-16 bg-white border-b border-ink-100 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-10"
       >
-        <div class="flex items-center gap-4">
-          <button class="btn-ghost -ml-2" @click="toggle" aria-label="사이드바 토글">
+        <div class="flex items-center gap-2 lg:gap-4 min-w-0">
+          <button
+            class="btn-ghost -ml-2 shrink-0"
+            @click="toggle"
+            aria-label="메뉴"
+          >
             <Bars3Icon class="h-5 w-5" />
           </button>
-          <h1 class="text-lg font-semibold text-ink-700">{{ pageTitle }}</h1>
+          <h1 class="text-base lg:text-lg font-semibold text-ink-700 truncate">
+            {{ pageTitle }}
+          </h1>
         </div>
         <div class="flex items-center gap-3">
           <div ref="profileRef" class="relative">
@@ -124,11 +164,11 @@ onBeforeUnmount(() => {
               @click="profileOpen = !profileOpen"
             >
               <div
-                class="h-8 w-8 rounded-full bg-gradient-to-br from-accent-soft to-accent grid place-items-center text-white text-xs font-semibold"
+                class="h-8 w-8 rounded-full bg-gradient-to-br from-accent-soft to-accent grid place-items-center text-white text-xs font-semibold shrink-0"
               >
                 {{ (auth.name ?? "A").slice(0, 1).toUpperCase() }}
               </div>
-              <span class="text-sm font-medium text-ink-600">
+              <span class="hidden sm:inline text-sm font-medium text-ink-600">
                 {{ auth.name ?? "admin" }}
               </span>
             </button>
@@ -151,7 +191,7 @@ onBeforeUnmount(() => {
         </div>
       </header>
 
-      <main class="flex-1 p-6 min-w-0">
+      <main class="flex-1 p-4 lg:p-6 min-w-0">
         <RouterView />
       </main>
     </div>
