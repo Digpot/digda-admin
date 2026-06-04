@@ -50,6 +50,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "모찌 관리" }
       },
       {
+        path: "/nickname-exhibits",
+        name: "nickname-exhibits",
+        component: () => import("@/views/NicknameExhibitsView.vue"),
+        meta: { title: "별명 전시관 관리" }
+      },
+      {
         path: "/db",
         name: "db",
         component: () => import("@/views/DbView.vue"),

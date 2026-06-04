@@ -4,9 +4,11 @@ import type {
   AdminCharacter,
   AdminColumnInfo,
   AdminDiary,
+  AdminExhibitAccess,
   AdminGroupRoom,
   AdminLoginRequest,
   AdminLoginResponse,
+  AdminNicknameExhibit,
   AdminPageResponse,
   AdminSchedule,
   AdminTableInfo,
@@ -15,11 +17,14 @@ import type {
   AdminUpsertRowRequest,
   AdminUser,
   AdminWriteResult,
+  CreateNicknameExhibitRequest,
   DashboardSummary,
   GroupRoomAction,
   Role,
   SendAnnouncementRequest,
   SendAnnouncementResponse,
+  UpdateNicknameExhibitRequest,
+  UploadImageResponse,
   UserActionLog,
   UserActionType
 } from "@/types/api";
@@ -147,5 +152,57 @@ export const adminApi = {
   updateCharacter: (groupRoomId: number, body: AdminUpdateCharacterRequest) =>
     http
       .patch<AdminCharacter>(`${API}/characters/${groupRoomId}`, body)
-      .then((r) => r.data)
+      .then((r) => r.data),
+
+  // ── Nickname Exhibit (역대 별명 전시관) ──
+
+  searchExhibits: (params: { keyword?: string; page?: number; size?: number }) =>
+    http
+      .get<AdminPageResponse<AdminNicknameExhibit>>(`${API}/nickname-exhibits`, { params })
+      .then((r) => r.data),
+
+  createExhibit: (body: CreateNicknameExhibitRequest) =>
+    http
+      .post<AdminNicknameExhibit>(`${API}/nickname-exhibits`, body)
+      .then((r) => r.data),
+
+  updateExhibit: (id: number, body: UpdateNicknameExhibitRequest) =>
+    http
+      .patch<AdminNicknameExhibit>(`${API}/nickname-exhibits/${id}`, body)
+      .then((r) => r.data),
+
+  deleteExhibit: (id: number) =>
+    http.delete<void>(`${API}/nickname-exhibits/${id}`).then((r) => r.data),
+
+  searchExhibitAccess: (params: { keyword?: string; page?: number; size?: number }) =>
+    http
+      .get<AdminPageResponse<AdminExhibitAccess>>(`${API}/nickname-exhibits/access`, {
+        params
+      })
+      .then((r) => r.data),
+
+  addExhibitAccess: (userId: string) =>
+    http
+      .post<AdminExhibitAccess>(`${API}/nickname-exhibits/access`, { userId })
+      .then((r) => r.data),
+
+  removeExhibitAccess: (userId: string) =>
+    http
+      .delete<void>(`${API}/nickname-exhibits/access/${userId}`)
+      .then((r) => r.data),
+
+  /**
+   * 이미지 업로드. 앱과 동일한 `/uploads/images` 엔드포인트를 admin 토큰으로 호출한다.
+   * (admin 베이스 경로 `/api/admin` 이 아닌 루트 경로이므로 절대 경로로 호출.)
+   */
+  uploadImage: (file: File, purpose = "exhibit") => {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("purpose", purpose);
+    return http
+      .post<UploadImageResponse>("/uploads/images", form, {
+        headers: { "Content-Type": "multipart/form-data" }
+      })
+      .then((r) => r.data);
+  }
 };

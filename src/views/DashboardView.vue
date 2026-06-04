@@ -49,7 +49,7 @@ onMounted(load);
         :value="formatNumber(summary?.totalUsers)"
         :caption="summary ? `관리자 ${summary.adminUsers}명 포함` : undefined"
         :icon="UsersIcon"
-        tone="indigo"
+        tone="coral"
       />
       <StatCard
         label="활성 그룹방"

@@ -12,7 +12,8 @@ import {
   MegaphoneIcon,
   Bars3Icon,
   ArrowRightOnRectangleIcon,
-  SparklesIcon
+  SparklesIcon,
+  PhotoIcon
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/stores/auth";
 
@@ -30,6 +31,7 @@ const menu = [
   { to: "/users", label: "사용자 관리", icon: UsersIcon },
   { to: "/group-rooms", label: "그룹방 관리", icon: HomeModernIcon },
   { to: "/mochi", label: "모찌 관리", icon: SparklesIcon },
+  { to: "/nickname-exhibits", label: "별명 전시관", icon: PhotoIcon },
   { to: "/diaries", label: "일기 관리", icon: BookOpenIcon },
   { to: "/schedules", label: "일정 관리", icon: CalendarDaysIcon },
   { to: "/db", label: "DB 테이블 조회", icon: TableCellsIcon },
@@ -100,38 +102,38 @@ onBeforeUnmount(() => {
 
     <!-- 사이드바: 데스크톱 정적 / 모바일 오프캔버스 -->
     <aside
-      class="fixed lg:static inset-y-0 left-0 z-40 w-[264px] shrink-0 bg-ink-950 text-ink-100 flex flex-col transition-transform duration-200 lg:transition-[width]"
+      class="fixed lg:static inset-y-0 left-0 z-40 w-[264px] shrink-0 bg-white border-r border-ink-100 text-ink-600 flex flex-col transition-transform duration-200 lg:transition-[width]"
       :class="[
         collapsed ? 'lg:w-[72px]' : 'lg:w-[232px]',
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
-      <div class="h-16 flex items-center gap-3 px-5 border-b border-white/5">
-        <img src="/favicon.svg" alt="디그팟" class="h-8 w-8 rounded-lg shrink-0" />
+      <div class="h-16 flex items-center gap-3 px-5 border-b border-ink-100">
+        <img src="/favicon.svg" alt="디그팟" class="h-9 w-9 rounded-xl shrink-0" />
         <span
           v-if="showLabels"
-          class="text-sm font-semibold tracking-wide text-white whitespace-nowrap"
+          class="text-[15px] font-bold tracking-tight text-ink-800 whitespace-nowrap"
         >
           디그팟 · Admin
         </span>
       </div>
-      <nav class="flex-1 py-4 space-y-0.5 overflow-y-auto">
+      <nav class="flex-1 py-4 space-y-1 overflow-y-auto">
         <RouterLink
           v-for="item in menu"
           :key="item.to"
           :to="item.to"
-          class="group flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-sm font-medium transition text-ink-300 hover:bg-white/5 hover:text-white"
-          active-class="!bg-white/10 !text-white"
+          class="group flex items-center gap-3 px-3.5 py-2.5 mx-2.5 rounded-xl text-sm font-medium transition text-ink-500 hover:bg-ink-50 hover:text-ink-800"
+          active-class="!bg-accent/10 !text-accent !font-semibold"
           @click="mobileOpen = false"
         >
           <component :is="item.icon" class="h-5 w-5 shrink-0" />
           <span v-if="showLabels" class="whitespace-nowrap">{{ item.label }}</span>
         </RouterLink>
       </nav>
-      <div class="px-4 pb-4">
+      <div class="px-4 pb-4 border-t border-ink-100 pt-3">
         <button
           type="button"
-          class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink-300 hover:bg-white/5 hover:text-white transition"
+          class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-500 hover:bg-accent/[0.06] hover:text-accent transition"
           @click="logout"
         >
           <ArrowRightOnRectangleIcon class="h-5 w-5 shrink-0" />
