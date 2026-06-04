@@ -31,38 +31,43 @@ async function onSubmit() {
 
 <template>
   <div class="min-h-screen grid lg:grid-cols-2 bg-ink-50">
-    <div class="hidden lg:flex relative bg-ink-950 overflow-hidden">
-      <div class="absolute inset-0 opacity-70">
+    <div class="hidden lg:flex relative bg-gradient-to-br from-accent-soft via-accent to-accent-strong overflow-hidden">
+      <div class="absolute inset-0">
         <div
-          class="absolute -top-24 -left-20 h-80 w-80 rounded-full bg-accent/40 blur-3xl"
+          class="absolute -top-24 -left-20 h-80 w-80 rounded-full bg-white/25 blur-3xl"
         ></div>
         <div
-          class="absolute bottom-10 right-10 h-72 w-72 rounded-full bg-rose-500/30 blur-3xl"
+          class="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-white/15 blur-3xl"
         ></div>
       </div>
       <div class="relative z-10 p-14 flex flex-col justify-between text-white">
         <div class="flex items-center gap-3">
-          <img src="/favicon.svg" alt="디그팟" class="h-9 w-9 rounded-lg" />
-          <span class="text-sm font-semibold tracking-wider">디그팟 · Admin</span>
+          <img src="/favicon.svg" alt="디그팟" class="h-10 w-10 rounded-2xl shadow-lg" />
+          <span class="text-sm font-bold tracking-wider">디그팟 · Admin</span>
         </div>
         <div class="space-y-4 max-w-md">
-          <h2 class="text-3xl font-semibold leading-tight">
+          <h2 class="text-[34px] font-extrabold leading-tight tracking-tight">
             운영에 필요한 정보를<br />한 화면에서.
           </h2>
-          <p class="text-sm text-ink-200/90 leading-relaxed">
+          <p class="text-[15px] text-white/90 leading-relaxed">
             사용자·그룹방·일기·일정부터 DB 메타데이터와 관리자 행위 로그까지,
             디그팟 백엔드의 모든 운영 지표를 모아보세요.
           </p>
         </div>
-        <p class="text-xs text-ink-300/70">© 디그팟 team</p>
+        <p class="text-xs text-white/70">© 디그팟 team</p>
       </div>
     </div>
 
     <div class="flex items-center justify-center p-8">
       <form class="card w-full max-w-md p-8 space-y-6" @submit.prevent="onSubmit">
-        <div>
-          <h1 class="text-xl font-semibold text-ink-700">관리자 로그인</h1>
-          <p class="mt-1 text-sm text-ink-400">
+        <div class="flex flex-col items-center text-center lg:items-start lg:text-left">
+          <img
+            src="/favicon.svg"
+            alt="디그팟"
+            class="h-12 w-12 rounded-2xl shadow-coral mb-4 lg:hidden"
+          />
+          <h1 class="text-2xl font-extrabold tracking-tight text-ink-800">관리자 로그인</h1>
+          <p class="mt-1.5 text-sm text-ink-500">
             관리자 권한(ADMIN) 계정만 접근할 수 있습니다.
           </p>
         </div>
