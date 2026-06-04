@@ -199,13 +199,11 @@ export const adminApi = {
     const form = new FormData();
     form.append("file", file);
     form.append("purpose", purpose);
-    // Content-Type 을 직접 "multipart/form-data" 로 박으면 boundary 가 빠져 서버가
-    // 멀티파트를 못 읽고 500 이 난다. undefined 로 두어 axios/브라우저가
-    // `multipart/form-data; boundary=...` 를 자동 생성하도록 한다.
+    // Content-Type 은 굳이 지정하지 않는다. http 요청 인터셉터가 FormData 요청의
+    // 기본 application/json 헤더를 제거해, 브라우저가 boundary 까지 포함한
+    // `multipart/form-data` 를 자동으로 설정하도록 위임한다.
     return http
-      .post<UploadImageResponse>("/uploads/images", form, {
-        headers: { "Content-Type": undefined }
-      })
+      .post<UploadImageResponse>("/uploads/images", form)
       .then((r) => r.data);
   }
 };

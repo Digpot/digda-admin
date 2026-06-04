@@ -56,14 +56,28 @@ const editId = ref<number | null>(null); // null = 신규 등록
 const formNickname = ref("");
 const formHistory = ref("");
 const formSortOrder = ref(0);
-const formImageUrl = ref<string | null>(null);
+const formImageUrl = ref<string | null>(null); // 기존(서버에 저장된) 이미지 URL
+const pickedFile = ref<File | null>(null); // 새로 고른(아직 업로드 안 한) 파일
+const localPreview = ref<string | null>(null); // 로컬 미리보기용 objectURL
 const uploading = ref(false);
 const saving = ref(false);
+
+// 미리보기는 새로 고른 로컬 파일을 우선하고, 없으면 기존 서버 이미지를 보여준다.
+const previewUrl = computed(() => localPreview.value ?? formImageUrl.value);
 
 const modalTitle = computed(() => (editId.value === null ? "별명 카드 등록" : "별명 카드 수정"));
 const canSave = computed(
   () => formNickname.value.trim().length > 0 && formHistory.value.trim().length > 0
 );
+
+/** 로컬 미리보기 objectURL 을 해제하고 고른 파일 상태를 비운다. */
+function clearPickedFile() {
+  if (localPreview.value) {
+    URL.revokeObjectURL(localPreview.value);
+    localPreview.value = null;
+  }
+  pickedFile.value = null;
+}
 
 function openCreate() {
   editId.value = null;
@@ -71,6 +85,7 @@ function openCreate() {
   formHistory.value = "";
   formSortOrder.value = 0;
   formImageUrl.value = null;
+  clearPickedFile();
   editOpen.value = true;
 }
 
@@ -80,24 +95,25 @@ function openEdit(row: AdminNicknameExhibit) {
   formHistory.value = row.history;
   formSortOrder.value = row.sortOrder;
   formImageUrl.value = row.imageUrl;
+  clearPickedFile();
   editOpen.value = true;
 }
 
-async function onPickImage(e: Event) {
+// 파일 선택 시 곧바로 서버에 올리지 않고 로컬에만 담아 둔다(미리보기만 생성).
+// 실제 업로드는 '저장'을 눌렀을 때 submitEdit 에서 수행한다.
+function onPickImage(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input.files?.[0];
+  input.value = ""; // 같은 파일 재선택 허용
   if (!file) return;
-  uploading.value = true;
-  errorMessage.value = null;
-  try {
-    const res = await adminApi.uploadImage(file, "exhibit");
-    formImageUrl.value = res.url;
-  } catch (err) {
-    errorMessage.value = extractErrorMessage(err, "이미지 업로드에 실패했습니다.");
-  } finally {
-    uploading.value = false;
-    input.value = ""; // 같은 파일 재선택 허용
-  }
+  clearPickedFile();
+  pickedFile.value = file;
+  localPreview.value = URL.createObjectURL(file);
+}
+
+function removeImage() {
+  clearPickedFile();
+  formImageUrl.value = null;
 }
 
 async function submitEdit() {
@@ -105,22 +121,34 @@ async function submitEdit() {
   saving.value = true;
   errorMessage.value = null;
   try {
+    // 새로 고른 이미지가 있으면 저장 직전에 업로드해 URL 을 확보한다.
+    let imageUrl = formImageUrl.value;
+    if (pickedFile.value) {
+      uploading.value = true;
+      try {
+        const res = await adminApi.uploadImage(pickedFile.value, "exhibit");
+        imageUrl = res.url;
+      } finally {
+        uploading.value = false;
+      }
+    }
     if (editId.value === null) {
       await adminApi.createExhibit({
         nickname: formNickname.value.trim(),
         history: formHistory.value.trim(),
         sortOrder: formSortOrder.value,
-        imageUrl: formImageUrl.value
+        imageUrl
       });
     } else {
       await adminApi.updateExhibit(editId.value, {
         nickname: formNickname.value.trim(),
         history: formHistory.value.trim(),
         sortOrder: formSortOrder.value,
-        imageUrl: formImageUrl.value
+        imageUrl
       });
     }
     editOpen.value = false;
+    clearPickedFile();
     await load();
   } catch (err) {
     errorMessage.value = extractErrorMessage(err, "저장에 실패했습니다.");
@@ -449,15 +477,15 @@ onMounted(load);
               type="file"
               accept="image/png,image/jpeg"
               class="input"
-              :disabled="uploading"
+              :disabled="uploading || saving"
               @change="onPickImage"
             />
           </div>
         </div>
-        <div v-if="uploading" class="text-xs text-ink-400">업로드 중...</div>
-        <div v-else-if="formImageUrl" class="flex items-center gap-3">
-          <img :src="formImageUrl" alt="" class="h-20 w-20 rounded-lg object-cover bg-ink-50" />
-          <button class="btn-outline px-3 py-1.5 text-xs" @click="formImageUrl = null">
+        <p class="text-xs text-ink-400">이미지는 저장을 누를 때 업로드됩니다.</p>
+        <div v-if="previewUrl" class="flex items-center gap-3">
+          <img :src="previewUrl" alt="" class="h-20 w-20 rounded-lg object-cover bg-ink-50" />
+          <button class="btn-outline px-3 py-1.5 text-xs" @click="removeImage">
             이미지 제거
           </button>
         </div>
