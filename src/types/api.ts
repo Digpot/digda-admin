@@ -214,3 +214,44 @@ export interface AdminUpdateCharacterRequest {
   dikoUnlocked?: boolean;
 }
 
+// ── Nickname Exhibit (역대 별명 전시관) ──
+
+export interface AdminNicknameExhibit {
+  id: number;
+  nickname: string;
+  imageUrl: string | null;
+  history: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateNicknameExhibitRequest {
+  nickname: string;
+  imageUrl?: string | null;
+  history: string;
+  sortOrder?: number;
+}
+
+export interface UpdateNicknameExhibitRequest {
+  nickname?: string;
+  imageUrl?: string | null;
+  history?: string;
+  sortOrder?: number;
+}
+
+export interface AdminExhibitAccess {
+  userId: string;
+  name: string;
+  email: string | null;
+  profileImage: string | null;
+  grantedAt: string;
+}
+
+export interface UploadImageResponse {
+  id: number;
+  url: string;
+  width: number;
+  height: number;
+}
+
