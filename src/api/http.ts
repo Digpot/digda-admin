@@ -2,7 +2,9 @@ import axios, { AxiosError, type AxiosInstance } from "axios";
 import { useAuthStore } from "@/stores/auth";
 import router from "@/router";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+// 주의: `??` 는 빈 문자열("")을 통과시켜 baseURL 이 비면 모든 요청이 같은 오리진
+// (Vercel 정적 호스트)으로 가 비-GET 이 405 가 된다. 빈/공백 값도 폴백되도록 `||` 사용.
+const baseURL = import.meta.env.VITE_API_BASE_URL?.trim() || "http://localhost:8080";
 
 export const http: AxiosInstance = axios.create({
   baseURL,
