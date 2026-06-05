@@ -17,6 +17,13 @@ http.interceptors.request.use((config) => {
   if (auth.accessToken) {
     config.headers.Authorization = `Bearer ${auth.accessToken}`;
   }
+  // FormData(파일 업로드) 요청은 기본 Content-Type(application/json)을 제거해야 한다.
+  // 헤더가 남아 있으면 브라우저가 boundary 가 포함된 `multipart/form-data; boundary=...`
+  // 를 못 붙여 서버가 멀티파트를 못 읽고 500 이 난다. 헤더를 비우면 브라우저(XHR)가
+  // boundary 까지 자동으로 채워 준다.
+  if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+    config.headers.delete("Content-Type");
+  }
   return config;
 });
 
