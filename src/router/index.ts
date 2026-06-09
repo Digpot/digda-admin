@@ -68,6 +68,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "지도 채움" }
       },
       {
+        path: "/app-config",
+        name: "app-config",
+        component: () => import("@/views/AppConfigView.vue"),
+        meta: { title: "대공지 · 피드백" }
+      },
+      {
         path: "/db",
         name: "db",
         component: () => import("@/views/DbView.vue"),

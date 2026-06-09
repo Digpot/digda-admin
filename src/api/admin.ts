@@ -18,6 +18,7 @@ import type {
   AdminUser,
   AdminUserTitle,
   AdminWriteResult,
+  AppConfig,
   CreateNicknameExhibitRequest,
   TitleCatalogItem,
   DashboardSummary,
@@ -206,6 +207,13 @@ export const adminApi = {
 
   revokeTitle: (userId: string, code: string) =>
     http.delete<AdminUserTitle[]>(`${API}/titles/users/${userId}/${code}`).then((r) => r.data),
+
+  // ── App Config (대공지 · 피드백) ──
+
+  getAppConfig: () => http.get<AppConfig>(`${API}/app-config`).then((r) => r.data),
+
+  updateAppConfig: (body: AppConfig) =>
+    http.put<AppConfig>(`${API}/app-config`, body).then((r) => r.data),
 
   // ── Region Map (지도 채움) ──
 

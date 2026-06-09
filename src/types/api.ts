@@ -277,3 +277,12 @@ export interface AdminUserTitle {
   earnedAt: string;
 }
 
+// ── App Config (대공지 · 피드백) ──
+
+export interface AppConfig {
+  noticeEnabled: boolean;
+  noticeMessage: string;
+  feedbackEnabled: boolean;
+  feedbackUrl: string;
+}
+
