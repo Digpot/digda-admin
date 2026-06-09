@@ -38,7 +38,6 @@ export interface AdminUser {
   userId: string;
   email: string | null;
   name: string;
-  statusMessage: string | null;
   profileImage: string | null;
   socialProvider: string;
   role: Role;
