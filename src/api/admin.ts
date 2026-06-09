@@ -16,8 +16,10 @@ import type {
   AdminUpdateCharacterRequest,
   AdminUpsertRowRequest,
   AdminUser,
+  AdminUserTitle,
   AdminWriteResult,
   CreateNicknameExhibitRequest,
+  TitleCatalogItem,
   DashboardSummary,
   GroupRoomAction,
   Role,
@@ -189,6 +191,42 @@ export const adminApi = {
   removeExhibitAccess: (userId: string) =>
     http
       .delete<void>(`${API}/nickname-exhibits/access/${userId}`)
+      .then((r) => r.data),
+
+  // ── Title (칭호 부여/회수) ──
+
+  titleCatalog: () =>
+    http.get<TitleCatalogItem[]>(`${API}/titles/catalog`).then((r) => r.data),
+
+  getUserTitles: (userId: string) =>
+    http.get<AdminUserTitle[]>(`${API}/titles/users/${userId}`).then((r) => r.data),
+
+  grantTitle: (userId: string, code: string) =>
+    http.post<AdminUserTitle[]>(`${API}/titles/grant`, { userId, code }).then((r) => r.data),
+
+  revokeTitle: (userId: string, code: string) =>
+    http.delete<AdminUserTitle[]>(`${API}/titles/users/${userId}/${code}`).then((r) => r.data),
+
+  // ── Region Map (지도 채움) ──
+
+  getFilledRegions: (groupRoomId: number) =>
+    http
+      .get<string[]>(`${API}/region-map`, { params: { groupRoomId } })
+      .then((r) => r.data),
+
+  fillRegions: (groupRoomId: number, regionKeys: string[]) =>
+    http
+      .post<string[]>(`${API}/region-map/fill`, { groupRoomId, regionKeys })
+      .then((r) => r.data),
+
+  unfillRegions: (groupRoomId: number, regionKeys: string[]) =>
+    http
+      .post<string[]>(`${API}/region-map/unfill`, { groupRoomId, regionKeys })
+      .then((r) => r.data),
+
+  clearRegions: (groupRoomId: number) =>
+    http
+      .delete<void>(`${API}/region-map`, { params: { groupRoomId } })
       .then((r) => r.data),
 
   /**

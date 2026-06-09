@@ -56,6 +56,18 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "별명 전시관 관리" }
       },
       {
+        path: "/titles",
+        name: "titles",
+        component: () => import("@/views/TitlesView.vue"),
+        meta: { title: "칭호 부여" }
+      },
+      {
+        path: "/region-map",
+        name: "region-map",
+        component: () => import("@/views/RegionMapView.vue"),
+        meta: { title: "지도 채움" }
+      },
+      {
         path: "/db",
         name: "db",
         component: () => import("@/views/DbView.vue"),

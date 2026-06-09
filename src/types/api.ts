@@ -255,3 +255,26 @@ export interface UploadImageResponse {
   height: number;
 }
 
+// ── Title (칭호) ──
+
+export interface TitleCatalogItem {
+  code: string;
+  name: string;
+  description: string;
+  category: string;
+  accentColor: string;
+  iconKey: string;
+  conditionType: string;
+  conditionValue: string | null;
+  sortOrder: number;
+}
+
+export interface AdminUserTitle {
+  code: string;
+  name: string;
+  category: string;
+  accentColor: string;
+  groupRoomName: string | null;
+  earnedAt: string;
+}
+
