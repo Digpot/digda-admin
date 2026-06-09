@@ -38,7 +38,6 @@ export interface AdminUser {
   userId: string;
   email: string | null;
   name: string;
-  statusMessage: string | null;
   profileImage: string | null;
   socialProvider: string;
   role: Role;
@@ -253,5 +252,37 @@ export interface UploadImageResponse {
   url: string;
   width: number;
   height: number;
+}
+
+// ── Title (칭호) ──
+
+export interface TitleCatalogItem {
+  code: string;
+  name: string;
+  description: string;
+  category: string;
+  accentColor: string;
+  iconKey: string;
+  conditionType: string;
+  conditionValue: string | null;
+  sortOrder: number;
+}
+
+export interface AdminUserTitle {
+  code: string;
+  name: string;
+  category: string;
+  accentColor: string;
+  groupRoomName: string | null;
+  earnedAt: string;
+}
+
+// ── App Config (대공지 · 피드백) ──
+
+export interface AppConfig {
+  noticeEnabled: boolean;
+  noticeMessage: string;
+  feedbackEnabled: boolean;
+  feedbackUrl: string;
 }
 

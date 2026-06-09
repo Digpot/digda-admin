@@ -13,7 +13,10 @@ import {
   Bars3Icon,
   ArrowRightOnRectangleIcon,
   SparklesIcon,
-  PhotoIcon
+  PhotoIcon,
+  TrophyIcon,
+  MapIcon,
+  SpeakerWaveIcon
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/stores/auth";
 
@@ -32,6 +35,9 @@ const menu = [
   { to: "/group-rooms", label: "그룹방 관리", icon: HomeModernIcon },
   { to: "/mochi", label: "모찌 관리", icon: SparklesIcon },
   { to: "/nickname-exhibits", label: "별명 전시관", icon: PhotoIcon },
+  { to: "/titles", label: "칭호 부여", icon: TrophyIcon },
+  { to: "/region-map", label: "지도 채움", icon: MapIcon },
+  { to: "/app-config", label: "대공지 · 피드백", icon: SpeakerWaveIcon },
   { to: "/diaries", label: "일기 관리", icon: BookOpenIcon },
   { to: "/schedules", label: "일정 관리", icon: CalendarDaysIcon },
   { to: "/db", label: "DB 테이블 조회", icon: TableCellsIcon },
