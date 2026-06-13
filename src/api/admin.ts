@@ -31,6 +31,11 @@ import type {
   UserActionLog,
   UserActionType
 } from "@/types/api";
+import type {
+  AdminReport,
+  ReportStatus,
+  ReportTargetType
+} from "@/types/api";
 
 const API = "/api/admin";
 
@@ -251,5 +256,22 @@ export const adminApi = {
     return http
       .post<UploadImageResponse>("/uploads/images", form)
       .then((r) => r.data);
-  }
+  },
+
+  // ── Report (신고 관리) ──
+
+  searchReports: (params: {
+    status?: ReportStatus;
+    targetType?: ReportTargetType;
+    page?: number;
+    size?: number;
+  }) =>
+    http
+      .get<AdminPageResponse<AdminReport>>(`${API}/reports`, { params })
+      .then((r) => r.data),
+
+  updateReportStatus: (reportId: number, status: ReportStatus) =>
+    http
+      .patch<AdminReport>(`${API}/reports/${reportId}/status`, { status })
+      .then((r) => r.data)
 };
