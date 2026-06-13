@@ -286,3 +286,28 @@ export interface AppConfig {
   feedbackUrl: string;
 }
 
+// ── Report (신고 관리) ──
+export type ReportStatus = "PENDING" | "RESOLVED" | "DISMISSED";
+export type ReportTargetType = "DIARY" | "COMMENT" | "SCHEDULE" | "USER";
+export type ReportReason =
+  | "SPAM"
+  | "ABUSE"
+  | "SEXUAL"
+  | "VIOLENCE"
+  | "PRIVACY"
+  | "ETC";
+
+export interface AdminReport {
+  reportId: number;
+  reporterId: string;
+  reporterName: string;
+  targetType: ReportTargetType;
+  targetId: string;
+  groupRoomId: number | null;
+  reason: ReportReason;
+  detail: string | null;
+  status: ReportStatus;
+  createdAt: string;
+  reviewedAt: string | null;
+}
+

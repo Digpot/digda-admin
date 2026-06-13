@@ -16,7 +16,8 @@ import {
   PhotoIcon,
   TrophyIcon,
   MapIcon,
-  SpeakerWaveIcon
+  SpeakerWaveIcon,
+  FlagIcon
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/stores/auth";
 
@@ -39,6 +40,7 @@ const menu = [
   { to: "/region-map", label: "지도 채움", icon: MapIcon },
   { to: "/app-config", label: "대공지 · 피드백", icon: SpeakerWaveIcon },
   { to: "/diaries", label: "일기 관리", icon: BookOpenIcon },
+  { to: "/reports", label: "신고 관리", icon: FlagIcon },
   { to: "/schedules", label: "일정 관리", icon: CalendarDaysIcon },
   { to: "/db", label: "DB 테이블 조회", icon: TableCellsIcon },
   { to: "/logs", label: "로그 관리", icon: ClipboardDocumentListIcon },

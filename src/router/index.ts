@@ -38,6 +38,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "일기 관리" }
       },
       {
+        path: "/reports",
+        name: "reports",
+        component: () => import("@/views/ReportsView.vue"),
+        meta: { title: "신고 관리" }
+      },
+      {
         path: "/schedules",
         name: "schedules",
         component: () => import("@/views/SchedulesView.vue"),
