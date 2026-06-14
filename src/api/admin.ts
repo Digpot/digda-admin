@@ -293,8 +293,8 @@ export const adminApi = {
       .get<AdminPageResponse<AdminInquiry>>(`${API}/inquiries`, { params })
       .then((r) => r.data),
 
-  markInquiryAnswered: (inquiryId: number) =>
+  answerInquiry: (inquiryId: number, answer: string) =>
     http
-      .patch<AdminInquiry>(`${API}/inquiries/${inquiryId}/answered`)
+      .patch<AdminInquiry>(`${API}/inquiries/${inquiryId}/answer`, { answer })
       .then((r) => r.data)
 };

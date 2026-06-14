@@ -47,33 +47,36 @@ async function load() {
   }
 }
 
-async function markAnswered(inquiry: AdminInquiry) {
-  working.value = inquiry.inquiryId;
-  try {
-    const updated = await adminApi.markInquiryAnswered(inquiry.inquiryId);
-    const idx = rows.value.findIndex((i) => i.inquiryId === updated.inquiryId);
-    if (idx >= 0) rows.value[idx] = updated;
-  } catch (err) {
-    errorMessage.value = extractErrorMessage(err, "처리에 실패했습니다.");
-  } finally {
-    working.value = null;
-  }
-}
-
-// 긴 문의 내용은 표를 깨뜨리므로 셀에선 줄여 보여주고, 클릭 시 팝업으로 전체를 본다.
+// 문의 내용/답변은 팝업에서 보고, 답변도 팝업에서 작성한다.
 const detailTarget = ref<AdminInquiry | null>(null);
+const answerText = ref("");
 
 function openDetail(inquiry: AdminInquiry) {
   detailTarget.value = inquiry;
+  answerText.value = inquiry.answer ?? "";
 }
 
-async function markAnsweredFromDetail() {
+async function submitAnswer() {
   if (!detailTarget.value) return;
-  await markAnswered(detailTarget.value);
-  const updated = rows.value.find(
-    (i) => i.inquiryId === detailTarget.value?.inquiryId
-  );
-  if (updated) detailTarget.value = updated;
+  const text = answerText.value.trim();
+  if (!text) {
+    errorMessage.value = "답변 내용을 입력해주세요.";
+    return;
+  }
+  working.value = detailTarget.value.inquiryId;
+  try {
+    const updated = await adminApi.answerInquiry(
+      detailTarget.value.inquiryId,
+      text
+    );
+    const idx = rows.value.findIndex((i) => i.inquiryId === updated.inquiryId);
+    if (idx >= 0) rows.value[idx] = updated;
+    detailTarget.value = updated;
+  } catch (err) {
+    errorMessage.value = extractErrorMessage(err, "답변 등록에 실패했습니다.");
+  } finally {
+    working.value = null;
+  }
 }
 
 function onSearch() {
@@ -160,14 +163,16 @@ onMounted(load);
               </td>
               <td class="text-right pr-4 align-top">
                 <button
-                  v-if="q.status !== 'ANSWERED'"
-                  class="btn-outline px-2.5 py-1.5 text-xs !text-emerald-600 hover:!bg-emerald-50"
-                  :disabled="working === q.inquiryId"
-                  @click="markAnswered(q)"
+                  class="btn-outline px-2.5 py-1.5 text-xs"
+                  :class="
+                    q.status !== 'ANSWERED'
+                      ? '!text-emerald-600 hover:!bg-emerald-50'
+                      : ''
+                  "
+                  @click="openDetail(q)"
                 >
-                  답변완료
+                  {{ q.status === "ANSWERED" ? "답변 보기" : "답변하기" }}
                 </button>
-                <span v-else class="text-ink-300 text-xs">완료</span>
               </td>
             </tr>
           </tbody>
@@ -216,20 +221,46 @@ onMounted(load);
             · 답변 {{ formatDate(detailTarget.answeredAt) }}
           </span>
         </div>
-        <div
-          class="max-h-[50vh] overflow-y-auto whitespace-pre-wrap break-words rounded-lg bg-ink-50 p-3 leading-relaxed text-ink-700"
-        >
-          {{ detailTarget.content }}
+        <div>
+          <label class="label">문의 내용</label>
+          <div
+            class="max-h-[30vh] overflow-y-auto whitespace-pre-wrap break-words rounded-lg bg-ink-50 p-3 leading-relaxed text-ink-700"
+          >
+            {{ detailTarget.content }}
+          </div>
+        </div>
+        <div>
+          <label class="label">
+            답변
+            <span
+              v-if="detailTarget.status === 'ANSWERED'"
+              class="text-emerald-600"
+            >
+              (등록됨 — 수정 후 다시 등록할 수 있어요)
+            </span>
+          </label>
+          <textarea
+            v-model="answerText"
+            rows="5"
+            maxlength="2000"
+            class="input resize-none"
+            placeholder="사용자에게 전달될 답변을 입력하세요. 앱 고객센터에 표시됩니다."
+          />
         </div>
         <div class="flex justify-end gap-2">
           <button class="btn-outline" @click="detailTarget = null">닫기</button>
           <button
-            v-if="detailTarget.status !== 'ANSWERED'"
-            class="btn-primary !bg-emerald-600 hover:!bg-emerald-700"
+            class="btn-primary"
             :disabled="working === detailTarget.inquiryId"
-            @click="markAnsweredFromDetail"
+            @click="submitAnswer"
           >
-            답변완료 처리
+            {{
+              working === detailTarget.inquiryId
+                ? "등록 중..."
+                : detailTarget.status === "ANSWERED"
+                  ? "답변 수정"
+                  : "답변 등록"
+            }}
           </button>
         </div>
       </div>
