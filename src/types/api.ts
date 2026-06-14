@@ -41,6 +41,7 @@ export interface AdminUser {
   profileImage: string | null;
   socialProvider: string;
   role: Role;
+  restricted: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -303,6 +304,8 @@ export interface AdminReport {
   reporterName: string;
   targetType: ReportTargetType;
   targetId: string;
+  reportedUserId: string | null;
+  reportedUserName: string | null;
   groupRoomId: number | null;
   reason: ReportReason;
   detail: string | null;
