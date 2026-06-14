@@ -36,7 +36,9 @@ import type {
   ReportStatus,
   ReportTargetType,
   AdminInquiry,
-  InquiryStatus
+  InquiryStatus,
+  AdminDeletionRequest,
+  DeletionRequestStatus
 } from "@/types/api";
 
 const API = "/api/admin";
@@ -145,6 +147,22 @@ export const adminApi = {
   searchAnnouncements: (params: { keyword?: string; page?: number; size?: number }) =>
     http
       .get<AdminPageResponse<AdminAnnouncement>>(`${API}/announcements`, { params })
+      .then((r) => r.data),
+
+  // ── Deletion request (계정/데이터 삭제 요청) ──
+
+  searchDeletionRequests: (params: {
+    status?: DeletionRequestStatus;
+    page?: number;
+    size?: number;
+  }) =>
+    http
+      .get<AdminPageResponse<AdminDeletionRequest>>(`${API}/deletion-requests`, { params })
+      .then((r) => r.data),
+
+  markDeletionRequestDone: (id: number) =>
+    http
+      .patch<AdminDeletionRequest>(`${API}/deletion-requests/${id}/done`)
       .then((r) => r.data),
 
   // ── Character (Mochi) ──

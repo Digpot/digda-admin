@@ -9,6 +9,13 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true }
   },
   {
+    // 비로그인 공개 계정/데이터 삭제 요청 페이지 (Google Play 데이터 안전성 URL).
+    path: "/deletion-request",
+    name: "deletion-request",
+    component: () => import("@/views/PublicDeletionRequestView.vue"),
+    meta: { public: true }
+  },
+  {
     path: "/",
     component: () => import("@/components/layout/AdminShell.vue"),
     children: [
@@ -102,6 +109,12 @@ const routes: RouteRecordRaw[] = [
         name: "announcements",
         component: () => import("@/views/AnnouncementsView.vue"),
         meta: { title: "공지 발송" }
+      },
+      {
+        path: "/deletion-requests",
+        name: "deletion-requests",
+        component: () => import("@/views/DeletionRequestsView.vue"),
+        meta: { title: "삭제 요청 관리" }
       }
     ]
   },

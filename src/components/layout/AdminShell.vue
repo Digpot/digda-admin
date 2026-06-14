@@ -18,7 +18,8 @@ import {
   MapIcon,
   SpeakerWaveIcon,
   FlagIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  TrashIcon
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/stores/auth";
 
@@ -46,7 +47,8 @@ const menu = [
   { to: "/schedules", label: "일정 관리", icon: CalendarDaysIcon },
   { to: "/db", label: "DB 테이블 조회", icon: TableCellsIcon },
   { to: "/logs", label: "로그 관리", icon: ClipboardDocumentListIcon },
-  { to: "/announcements", label: "공지 발송", icon: MegaphoneIcon }
+  { to: "/announcements", label: "공지 발송", icon: MegaphoneIcon },
+  { to: "/deletion-requests", label: "삭제 요청 관리", icon: TrashIcon }
 ];
 
 const pageTitle = computed(
