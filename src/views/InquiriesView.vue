@@ -4,6 +4,7 @@ import { adminApi } from "@/api/admin";
 import { extractErrorMessage } from "@/api/http";
 import type { AdminInquiry, InquiryStatus } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
+import Modal from "@/components/ui/Modal.vue";
 import { formatDate } from "@/utils/format";
 
 const statusFilter = ref<InquiryStatus | "">("");
@@ -57,6 +58,22 @@ async function markAnswered(inquiry: AdminInquiry) {
   } finally {
     working.value = null;
   }
+}
+
+// 긴 문의 내용은 표를 깨뜨리므로 셀에선 줄여 보여주고, 클릭 시 팝업으로 전체를 본다.
+const detailTarget = ref<AdminInquiry | null>(null);
+
+function openDetail(inquiry: AdminInquiry) {
+  detailTarget.value = inquiry;
+}
+
+async function markAnsweredFromDetail() {
+  if (!detailTarget.value) return;
+  await markAnswered(detailTarget.value);
+  const updated = rows.value.find(
+    (i) => i.inquiryId === detailTarget.value?.inquiryId
+  );
+  if (updated) detailTarget.value = updated;
 }
 
 function onSearch() {
@@ -125,8 +142,16 @@ onMounted(load);
                   {{ q.userId }}
                 </div>
               </td>
-              <td class="text-ink-600 align-top max-w-md">
-                <p class="whitespace-pre-wrap leading-relaxed">{{ q.content }}</p>
+              <td class="align-top max-w-xs">
+                <button
+                  class="text-left text-ink-600 hover:text-accent transition"
+                  @click="openDetail(q)"
+                >
+                  <span class="block truncate-2 leading-relaxed">
+                    {{ q.content }}
+                  </span>
+                  <span class="text-accent text-xs font-medium">전체 보기</span>
+                </button>
               </td>
               <td class="align-top">
                 <span
@@ -165,5 +190,63 @@ onMounted(load);
         />
       </div>
     </div>
+
+    <Modal
+      :open="!!detailTarget"
+      title="문의 상세"
+      @close="detailTarget = null"
+    >
+      <div v-if="detailTarget" class="space-y-4 text-sm">
+        <div class="flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <p class="text-ink-700 font-medium truncate">
+              {{ detailTarget.userName }}
+            </p>
+            <p class="tabular-nums text-ink-400 text-xs truncate">
+              {{ detailTarget.userId }}
+            </p>
+          </div>
+          <span
+            class="shrink-0 inline-block rounded-full px-2 py-0.5 text-xs font-semibold"
+            :class="statusBadgeClass(detailTarget.status)"
+          >
+            {{ STATUS_LABEL[detailTarget.status] }}
+          </span>
+        </div>
+        <div class="text-xs text-ink-400">
+          접수 {{ formatDate(detailTarget.createdAt) }}
+          <span v-if="detailTarget.answeredAt">
+            · 답변 {{ formatDate(detailTarget.answeredAt) }}
+          </span>
+        </div>
+        <div
+          class="max-h-[50vh] overflow-y-auto whitespace-pre-wrap break-words rounded-lg bg-ink-50 p-3 leading-relaxed text-ink-700"
+        >
+          {{ detailTarget.content }}
+        </div>
+        <div class="flex justify-end gap-2">
+          <button class="btn-outline" @click="detailTarget = null">닫기</button>
+          <button
+            v-if="detailTarget.status !== 'ANSWERED'"
+            class="btn-primary !bg-emerald-600 hover:!bg-emerald-700"
+            :disabled="working === detailTarget.inquiryId"
+            @click="markAnsweredFromDetail"
+          >
+            답변완료 처리
+          </button>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
+
+<style scoped>
+/* 표 셀에서 긴 내용은 2줄로 줄이고 말줄임 — 레이아웃 깨짐 방지. */
+.truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
