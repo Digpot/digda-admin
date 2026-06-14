@@ -339,3 +339,19 @@ export interface AdminInquiry {
   answeredAt: string | null;
 }
 
+// ── Deletion request (계정/데이터 삭제 요청) ──
+
+export type DeletionRequestType = "ACCOUNT" | "DATA";
+export type DeletionRequestStatus = "PENDING" | "DONE";
+
+export interface AdminDeletionRequest {
+  id: number;
+  type: DeletionRequestType;
+  email: string;
+  groupRoomName: string | null;
+  content: string | null;
+  status: DeletionRequestStatus;
+  createdAt: string;
+  handledAt: string | null;
+}
+
