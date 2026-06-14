@@ -298,6 +298,16 @@ export type ReportReason =
   | "PRIVACY"
   | "ETC";
 
+/** 신고된 콘텐츠 원본 스냅샷 — 검토용. 종류별로 채워지는 필드가 다르다. */
+export interface AdminReportTargetContent {
+  available: boolean;
+  title: string | null;
+  text: string | null;
+  images: string[];
+  authorName: string | null;
+  createdAt: string | null;
+}
+
 export interface AdminReport {
   reportId: number;
   reporterId: string;
@@ -312,5 +322,18 @@ export interface AdminReport {
   status: ReportStatus;
   createdAt: string;
   reviewedAt: string | null;
+  targetContent: AdminReportTargetContent;
+}
+
+export type InquiryStatus = "PENDING" | "ANSWERED";
+
+export interface AdminInquiry {
+  inquiryId: number;
+  userId: string;
+  userName: string;
+  content: string;
+  status: InquiryStatus;
+  createdAt: string;
+  answeredAt: string | null;
 }
 

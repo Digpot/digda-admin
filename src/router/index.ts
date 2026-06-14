@@ -44,6 +44,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "신고 관리" }
       },
       {
+        path: "/inquiries",
+        name: "inquiries",
+        component: () => import("@/views/InquiriesView.vue"),
+        meta: { title: "고객센터 문의" }
+      },
+      {
         path: "/schedules",
         name: "schedules",
         component: () => import("@/views/SchedulesView.vue"),

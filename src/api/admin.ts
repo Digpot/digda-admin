@@ -34,7 +34,9 @@ import type {
 import type {
   AdminReport,
   ReportStatus,
-  ReportTargetType
+  ReportTargetType,
+  AdminInquiry,
+  InquiryStatus
 } from "@/types/api";
 
 const API = "/api/admin";
@@ -278,5 +280,21 @@ export const adminApi = {
   updateReportStatus: (reportId: number, status: ReportStatus) =>
     http
       .patch<AdminReport>(`${API}/reports/${reportId}/status`, { status })
+      .then((r) => r.data),
+
+  // ── Inquiry (고객센터 문의) ──
+
+  searchInquiries: (params: {
+    status?: InquiryStatus;
+    page?: number;
+    size?: number;
+  }) =>
+    http
+      .get<AdminPageResponse<AdminInquiry>>(`${API}/inquiries`, { params })
+      .then((r) => r.data),
+
+  markInquiryAnswered: (inquiryId: number) =>
+    http
+      .patch<AdminInquiry>(`${API}/inquiries/${inquiryId}/answered`)
       .then((r) => r.data)
 };
