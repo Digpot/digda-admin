@@ -142,15 +142,12 @@ onMounted(load);
                   {{ q.userId }}
                 </div>
               </td>
-              <td class="align-top max-w-xs">
+              <td class="align-top">
                 <button
-                  class="text-left text-ink-600 hover:text-accent transition"
+                  class="btn-outline px-2.5 py-1.5 text-xs"
                   @click="openDetail(q)"
                 >
-                  <span class="block truncate-2 leading-relaxed">
-                    {{ q.content }}
-                  </span>
-                  <span class="text-accent text-xs font-medium">전체 보기</span>
+                  전체 보기
                 </button>
               </td>
               <td class="align-top">
@@ -239,14 +236,3 @@ onMounted(load);
     </Modal>
   </div>
 </template>
-
-<style scoped>
-/* 표 셀에서 긴 내용은 2줄로 줄이고 말줄임 — 레이아웃 깨짐 방지. */
-.truncate-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>
