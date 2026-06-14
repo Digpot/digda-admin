@@ -56,6 +56,11 @@ export const adminApi = {
   updateUserRole: (userId: string, role: Role) =>
     http.patch<AdminUser>(`${API}/users/${userId}/role`, { role }).then((r) => r.data),
 
+  updateUserRestriction: (userId: string, restricted: boolean) =>
+    http
+      .patch<AdminUser>(`${API}/users/${userId}/restriction`, { restricted })
+      .then((r) => r.data),
+
   searchGroupRooms: (params: {
     keyword?: string;
     includeDeleted?: boolean;

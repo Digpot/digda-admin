@@ -86,6 +86,29 @@ async function updateStatus(report: AdminReport, status: ReportStatus) {
   }
 }
 
+// 신고가 너무 심한 경우 — 피신고자를 바로 서비스 제한 처리(마이페이지만 이용 가능).
+const restricting = ref<number | null>(null);
+
+async function restrictReportedUser(report: AdminReport) {
+  if (!report.reportedUserId) return;
+  const name = report.reportedUserName ?? report.reportedUserId;
+  const ok = window.confirm(
+    `'${name}' 님을 서비스 이용 제한 처리할까요?\n` +
+      `제한된 사용자는 앱에서 마이페이지만 사용할 수 있습니다.`
+  );
+  if (!ok) return;
+  restricting.value = report.reportId;
+  try {
+    await adminApi.updateUserRestriction(report.reportedUserId, true);
+    errorMessage.value = null;
+    window.alert(`'${name}' 님을 서비스 제한 처리했습니다.`);
+  } catch (err) {
+    errorMessage.value = extractErrorMessage(err, "서비스 제한 처리에 실패했습니다.");
+  } finally {
+    restricting.value = null;
+  }
+}
+
 function onSearch() {
   page.value = 0;
   load();
@@ -137,21 +160,22 @@ onMounted(load);
             <tr>
               <th>접수</th>
               <th>신고자</th>
+              <th>피신고자</th>
               <th>대상</th>
               <th>대상 ID</th>
               <th>사유</th>
               <th>상태</th>
-              <th class="text-right pr-4 w-44">작업</th>
+              <th class="text-right pr-4 w-56">작업</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loading">
-              <td colspan="7" class="text-center text-ink-400 py-8">
+              <td colspan="8" class="text-center text-ink-400 py-8">
                 불러오는 중...
               </td>
             </tr>
             <tr v-else-if="!rows.length">
-              <td colspan="7" class="text-center text-ink-400 py-8">
+              <td colspan="8" class="text-center text-ink-400 py-8">
                 신고가 없습니다.
               </td>
             </tr>
@@ -160,6 +184,17 @@ onMounted(load);
                 {{ formatDate(r.createdAt) }}
               </td>
               <td class="text-ink-600">{{ r.reporterName }}</td>
+              <td>
+                <template v-if="r.reportedUserId">
+                  <div class="text-ink-700 font-medium">
+                    {{ r.reportedUserName ?? "(이름 없음)" }}
+                  </div>
+                  <div class="tabular-nums text-ink-400 text-xs">
+                    {{ r.reportedUserId }}
+                  </div>
+                </template>
+                <span v-else class="text-ink-300 text-xs">-</span>
+              </td>
               <td class="text-ink-500">{{ TYPE_LABEL[r.targetType] }}</td>
               <td class="tabular-nums text-ink-400 text-xs">
                 {{ r.targetId }}
@@ -201,6 +236,15 @@ onMounted(load);
                   @click="updateStatus(r, 'DISMISSED')"
                 >
                   반려
+                </button>
+                <button
+                  v-if="r.reportedUserId"
+                  class="btn-outline px-2.5 py-1.5 text-xs !text-rose-600 hover:!bg-rose-50"
+                  :disabled="restricting === r.reportId"
+                  title="피신고자를 마이페이지만 이용 가능하도록 제한"
+                  @click="restrictReportedUser(r)"
+                >
+                  이용 제한
                 </button>
               </td>
             </tr>
