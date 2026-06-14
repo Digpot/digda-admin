@@ -86,22 +86,35 @@ async function updateStatus(report: AdminReport, status: ReportStatus) {
   }
 }
 
-// 신고가 너무 심한 경우 — 피신고자를 바로 서비스 제한 처리(마이페이지만 이용 가능).
+// 피신고자 서비스 이용 제한을 신고 화면에서 바로 토글(제한 ↔ 해제).
+// reportedUserRestricted 로 현재 상태를 알고, 같은 피신고자의 다른 행도 함께 갱신한다.
 const restricting = ref<number | null>(null);
 
-async function restrictReportedUser(report: AdminReport) {
+async function toggleRestrictReportedUser(report: AdminReport) {
   if (!report.reportedUserId) return;
   const name = report.reportedUserName ?? report.reportedUserId;
+  const next = !report.reportedUserRestricted;
   const ok = window.confirm(
-    `'${name}' 님을 서비스 이용 제한 처리할까요?\n` +
-      `제한된 사용자는 앱에서 마이페이지만 사용할 수 있습니다.`
+    next
+      ? `'${name}' 님을 서비스 이용 제한 처리할까요?\n제한된 사용자는 앱에서 마이페이지만 사용할 수 있습니다.`
+      : `'${name}' 님의 서비스 이용 제한을 해제할까요?\n다시 모든 기능을 사용할 수 있게 됩니다.`
   );
   if (!ok) return;
   restricting.value = report.reportId;
   try {
-    await adminApi.updateUserRestriction(report.reportedUserId, true);
+    await adminApi.updateUserRestriction(report.reportedUserId, next);
     errorMessage.value = null;
-    window.alert(`'${name}' 님을 서비스 제한 처리했습니다.`);
+    // 같은 피신고자의 모든 행 상태를 함께 갱신해 버튼 라벨이 일관되게 보이도록.
+    rows.value.forEach((r) => {
+      if (r.reportedUserId === report.reportedUserId) {
+        r.reportedUserRestricted = next;
+      }
+    });
+    window.alert(
+      next
+        ? `'${name}' 님을 서비스 제한 처리했습니다.`
+        : `'${name}' 님의 서비스 제한을 해제했습니다.`
+    );
   } catch (err) {
     errorMessage.value = extractErrorMessage(err, "서비스 제한 처리에 실패했습니다.");
   } finally {
@@ -261,12 +274,21 @@ onMounted(load);
                 </button>
                 <button
                   v-if="r.reportedUserId"
-                  class="btn-outline px-2.5 py-1.5 text-xs !text-rose-600 hover:!bg-rose-50"
+                  class="btn-outline px-2.5 py-1.5 text-xs"
+                  :class="
+                    r.reportedUserRestricted
+                      ? '!text-emerald-600 hover:!bg-emerald-50'
+                      : '!text-rose-600 hover:!bg-rose-50'
+                  "
                   :disabled="restricting === r.reportId"
-                  title="피신고자를 마이페이지만 이용 가능하도록 제한"
-                  @click="restrictReportedUser(r)"
+                  :title="
+                    r.reportedUserRestricted
+                      ? '피신고자의 서비스 이용 제한을 해제'
+                      : '피신고자를 마이페이지만 이용 가능하도록 제한'
+                  "
+                  @click="toggleRestrictReportedUser(r)"
                 >
-                  이용 제한
+                  {{ r.reportedUserRestricted ? "제한 해제" : "이용 제한" }}
                 </button>
               </td>
             </tr>
