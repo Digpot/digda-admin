@@ -109,6 +109,16 @@ async function restrictReportedUser(report: AdminReport) {
   }
 }
 
+// 신고된 콘텐츠 원본 펼치기 — 어드민이 실제 내용을 보고 판단한다.
+const expanded = ref<Set<number>>(new Set());
+
+function toggleContent(reportId: number) {
+  const next = new Set(expanded.value);
+  if (next.has(reportId)) next.delete(reportId);
+  else next.add(reportId);
+  expanded.value = next;
+}
+
 function onSearch() {
   page.value = 0;
   load();
@@ -179,11 +189,17 @@ onMounted(load);
                 신고가 없습니다.
               </td>
             </tr>
-            <tr v-for="r in rows" :key="r.reportId">
+            <template v-for="r in rows" :key="r.reportId">
+            <tr>
               <td class="tabular-nums text-ink-500">
                 {{ formatDate(r.createdAt) }}
               </td>
-              <td class="text-ink-600">{{ r.reporterName }}</td>
+              <td>
+                <div class="text-ink-700 font-medium">{{ r.reporterName }}</div>
+                <div class="tabular-nums text-ink-400 text-xs">
+                  {{ r.reporterId }}
+                </div>
+              </td>
               <td>
                 <template v-if="r.reportedUserId">
                   <div class="text-ink-700 font-medium">
@@ -222,6 +238,12 @@ onMounted(load);
               </td>
               <td class="text-right pr-4 space-x-1.5">
                 <button
+                  class="btn-outline px-2.5 py-1.5 text-xs"
+                  @click="toggleContent(r.reportId)"
+                >
+                  {{ expanded.has(r.reportId) ? "원본 닫기" : "원본 보기" }}
+                </button>
+                <button
                   v-if="r.status !== 'RESOLVED'"
                   class="btn-outline px-2.5 py-1.5 text-xs !text-emerald-600 hover:!bg-emerald-50"
                   :disabled="working === r.reportId"
@@ -248,6 +270,55 @@ onMounted(load);
                 </button>
               </td>
             </tr>
+            <tr v-if="expanded.has(r.reportId)" class="bg-ink-50/60">
+              <td colspan="9" class="px-4 py-3">
+                <div
+                  v-if="r.targetContent && r.targetContent.available"
+                  class="space-y-2"
+                >
+                  <p
+                    v-if="r.targetContent.title"
+                    class="font-semibold text-ink-800"
+                  >
+                    {{ r.targetContent.title }}
+                  </p>
+                  <p
+                    v-if="r.targetContent.text"
+                    class="whitespace-pre-wrap text-ink-600 text-sm leading-relaxed"
+                  >
+                    {{ r.targetContent.text }}
+                  </p>
+                  <div
+                    v-if="r.targetContent.images.length"
+                    class="flex flex-wrap gap-2 pt-1"
+                  >
+                    <a
+                      v-for="(img, i) in r.targetContent.images"
+                      :key="i"
+                      :href="img"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      <img
+                        :src="img"
+                        class="h-24 w-24 rounded-lg object-cover border border-ink-100"
+                        alt="신고된 사진"
+                      />
+                    </a>
+                  </div>
+                  <p class="text-xs text-ink-400 pt-1">
+                    작성자: {{ r.targetContent.authorName ?? "-" }}
+                    <span v-if="r.targetContent.createdAt">
+                      · {{ formatDate(r.targetContent.createdAt) }}
+                    </span>
+                  </p>
+                </div>
+                <p v-else class="text-sm text-ink-400">
+                  원본 콘텐츠가 없습니다(삭제되었거나 사용자 신고).
+                </p>
+              </td>
+            </tr>
+            </template>
           </tbody>
         </table>
       </div>
