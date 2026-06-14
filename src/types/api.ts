@@ -316,6 +316,7 @@ export interface AdminReport {
   targetId: string;
   reportedUserId: string | null;
   reportedUserName: string | null;
+  reportedUserRestricted: boolean | null;
   groupRoomId: number | null;
   reason: ReportReason;
   detail: string | null;
