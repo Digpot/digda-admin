@@ -333,6 +333,7 @@ export interface AdminInquiry {
   userName: string;
   content: string;
   status: InquiryStatus;
+  answer: string | null;
   createdAt: string;
   answeredAt: string | null;
 }
