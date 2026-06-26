@@ -279,7 +279,9 @@ export const adminApi = {
     // 기본 application/json 헤더를 제거해, 브라우저가 boundary 까지 포함한
     // `multipart/form-data` 를 자동으로 설정하도록 위임한다.
     return http
-      .post<UploadImageResponse>("/uploads/images", form)
+      // 이미지 업로드는 사진 용량/회선에 따라 기본 15s 를 쉽게 넘겨
+      // "timeout of 15000ms exceeded" 가 난다. 업로드만 넉넉히 60s 로 둔다.
+      .post<UploadImageResponse>("/uploads/images", form, { timeout: 60_000 })
       .then((r) => r.data);
   },
 

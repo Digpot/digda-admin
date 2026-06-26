@@ -54,6 +54,12 @@ export const useAuthStore = defineStore("auth", {
       this.name = res.name;
       this.persist();
     },
+    // 토큰 갱신(/auth/refresh) 성공 시 새 access/refresh 토큰만 교체·저장한다.
+    setTokens(accessToken: string, refreshToken: string) {
+      this.accessToken = accessToken;
+      this.refreshToken = refreshToken;
+      this.persist();
+    },
     persist() {
       if (typeof window === "undefined") return;
       window.localStorage.setItem(
