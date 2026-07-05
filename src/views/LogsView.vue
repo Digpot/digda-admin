@@ -36,11 +36,12 @@ const rows = ref<UserActionLog[]>([]);
 const loading = ref(false);
 const errorMessage = ref<string | null>(null);
 
-function toIso(local: string): string | undefined {
+function toLocalDateTime(local: string): string | undefined {
   if (!local) return undefined;
-  const d = new Date(local);
-  if (Number.isNaN(d.getTime())) return undefined;
-  return d.toISOString();
+  // datetime-local 입력값은 관리자가 고른 KST wall-clock 이고, 서버 from/to 는
+  // naive LocalDateTime(KST) 파라미터다. UTC(ISO Z)로 바꾸면 필터가 9시간
+  // 어긋나므로 그대로 전달하되, 초가 없으면 ":00" 만 보정한다.
+  return local.length === 16 ? `${local}:00` : local;
 }
 
 async function load() {
@@ -50,8 +51,8 @@ async function load() {
     const res = await adminApi.searchLogs({
       actorId: actorId.value || undefined,
       action: action.value || undefined,
-      from: toIso(from.value),
-      to: toIso(to.value),
+      from: toLocalDateTime(from.value),
+      to: toLocalDateTime(to.value),
       keyword: keyword.value || undefined,
       page: page.value,
       size: size.value

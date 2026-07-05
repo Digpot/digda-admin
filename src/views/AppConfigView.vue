@@ -44,7 +44,9 @@ async function save() {
       feedbackUrl: feedbackUrl.value
     });
     apply(res);
-    savedAt.value = new Date().toLocaleTimeString();
+    savedAt.value = new Date().toLocaleTimeString("ko-KR", {
+      timeZone: "Asia/Seoul",
+    });
   } catch (err) {
     errorMessage.value = extractErrorMessage(err, "저장에 실패했습니다.");
   } finally {

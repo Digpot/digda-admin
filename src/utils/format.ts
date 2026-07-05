@@ -6,39 +6,43 @@ export function formatNumber(n: number | null | undefined): string {
 const KST_TIME_ZONE = "Asia/Seoul";
 
 /**
- * 서버 datetime 문자열을 Date 로 파싱한다.
- *
- * 서버는 타임존 표기가 없는 UTC LocalDateTime 을 내려준다(예: "2026-05-29T14:21:06").
- * JS `new Date()` 는 오프셋 없는 datetime 을 *로컬* 로 해석해 9시간 어긋나므로,
- * 오프셋/Z 가 없으면 UTC 로 간주하도록 'Z' 를 붙여서 파싱한다.
- * (날짜만 있는 "2026-05-29" 같은 LocalDate 는 그대로 둔다 — 특정 시각이 아닌 달력 날짜)
+ * 서버 datetime 이 타임존 표기(Z 또는 ±HH:mm)를 가지는지 여부.
  */
-function parseServerDate(value: string): Date {
-  const hasTime = value.includes("T") || value.includes(" ");
-  const hasTz = /(?:[zZ]|[+-]\d{2}:?\d{2})$/.test(value);
-  const normalized = hasTime && !hasTz ? `${value.replace(" ", "T")}Z` : value;
-  return new Date(normalized);
+function hasTimeZone(value: string): boolean {
+  return /(?:[zZ]|[+-]\d{2}:?\d{2})$/.test(value);
 }
 
+/**
+ * 서버는 JVM 시간대를 Asia/Seoul 로 고정(2026-06-28)했기 때문에, 타임존 표기가
+ * 없는 naive LocalDateTime 을 **이미 KST** 로 내려준다(예: "2026-05-29T14:21:06").
+ * 따라서 표기 없는 값은 그대로 KST 로 보고 표시하고(추가 환산 금지 — 예전처럼 'Z'
+ * 를 붙이면 +9시간 어긋난다), Z/오프셋이 붙은 값만 실제 KST 로 환산한다.
+ */
 export function formatDate(value: string | null | undefined): string {
   if (!value) return "-";
-  const d = parseServerDate(value);
-  if (Number.isNaN(d.getTime())) return value;
-  // sv-SE 로케일은 "YYYY-MM-DD HH:mm:ss" 형태라 기존 표기를 유지하면서 KST 로 변환된다.
-  return d
-    .toLocaleString("sv-SE", { timeZone: KST_TIME_ZONE })
-    .slice(0, 16);
+  const hasTime = value.includes("T") || value.includes(" ");
+  if (!hasTime) return value; // 날짜만 있는 LocalDate 는 그대로
+  if (hasTimeZone(value)) {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value;
+    // sv-SE 로케일 = "YYYY-MM-DD HH:mm:ss" 형태로 KST 환산.
+    return d.toLocaleString("sv-SE", { timeZone: KST_TIME_ZONE }).slice(0, 16);
+  }
+  // naive == 이미 KST wall-clock → 그대로 표시.
+  return value.replace("T", " ").slice(0, 16);
 }
 
 export function formatDateOnly(value: string | null | undefined): string {
   if (!value) return "-";
-  // datetime 이면 KST 기준 날짜로 변환(자정 부근 하루 밀림 방지), date-only 면 그대로 슬라이스.
-  if (value.includes("T") || value.includes(" ")) {
-    const d = parseServerDate(value);
+  const hasTime = value.includes("T") || value.includes(" ");
+  if (!hasTime) return value.slice(0, 10);
+  if (hasTimeZone(value)) {
+    const d = new Date(value);
     if (!Number.isNaN(d.getTime())) {
       return d.toLocaleDateString("sv-SE", { timeZone: KST_TIME_ZONE });
     }
   }
+  // naive == 이미 KST → 날짜 부분 그대로.
   return value.slice(0, 10);
 }
 
