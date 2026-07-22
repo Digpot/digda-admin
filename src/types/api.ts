@@ -278,13 +278,17 @@ export interface AdminUserTitle {
   earnedAt: string;
 }
 
-// ── App Config (대공지 · 피드백) ──
+// ── App Config (대공지 · 피드백 · 점검 모드) ──
 
 export interface AppConfig {
   noticeEnabled: boolean;
   noticeMessage: string;
   feedbackEnabled: boolean;
   feedbackUrl: string;
+  /** 서버 점검(업데이트) 모드 — 켜면 앱이 로그인 여부와 무관하게 전 기능 차단 */
+  maintenanceEnabled: boolean;
+  /** 점검 안내 문구(빈 값 = 앱 기본 문구) */
+  maintenanceMessage: string;
 }
 
 // ── Report (신고 관리) ──

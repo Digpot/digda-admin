@@ -8,6 +8,8 @@ const noticeEnabled = ref(false);
 const noticeMessage = ref("");
 const feedbackEnabled = ref(false);
 const feedbackUrl = ref("");
+const maintenanceEnabled = ref(false);
+const maintenanceMessage = ref("");
 
 const loading = ref(false);
 const saving = ref(false);
@@ -19,6 +21,8 @@ function apply(c: AppConfig) {
   noticeMessage.value = c.noticeMessage;
   feedbackEnabled.value = c.feedbackEnabled;
   feedbackUrl.value = c.feedbackUrl;
+  maintenanceEnabled.value = c.maintenanceEnabled ?? false;
+  maintenanceMessage.value = c.maintenanceMessage ?? "";
 }
 
 async function load() {
@@ -41,7 +45,9 @@ async function save() {
       noticeEnabled: noticeEnabled.value,
       noticeMessage: noticeMessage.value,
       feedbackEnabled: feedbackEnabled.value,
-      feedbackUrl: feedbackUrl.value
+      feedbackUrl: feedbackUrl.value,
+      maintenanceEnabled: maintenanceEnabled.value,
+      maintenanceMessage: maintenanceMessage.value
     });
     apply(res);
     savedAt.value = new Date().toLocaleTimeString("ko-KR", {
@@ -109,6 +115,44 @@ onMounted(load);
           placeholder="https://forms.gle/..."
         />
       </div>
+    </div>
+
+    <!-- 서버 점검(업데이트) 모드 -->
+    <div
+      class="card p-5 space-y-4"
+      :class="maintenanceEnabled ? 'ring-2 ring-rose-400' : ''"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-semibold text-ink-800">서버 점검 모드</h2>
+          <p class="text-xs text-ink-400 mt-0.5">
+            켜면 앱이 <b class="text-rose-600">로그인 여부와 무관하게 전 기능을 차단</b>하고
+            점검 안내 팝업을 띄웁니다. 서버 업데이트/배포 중에만 켜세요.
+          </p>
+        </div>
+        <label class="flex items-center gap-2 text-sm text-ink-600 shrink-0">
+          <input
+            v-model="maintenanceEnabled"
+            type="checkbox"
+            class="h-4 w-4 rounded"
+          />
+          점검 중
+        </label>
+      </div>
+      <div>
+        <label class="label">점검 안내 문구 (비우면 앱 기본 문구)</label>
+        <textarea
+          v-model="maintenanceMessage"
+          class="input"
+          rows="2"
+          maxlength="300"
+          placeholder="예) 더 나은 디그팟을 위해 서버를 업데이트하고 있어요. 잠시 후 다시 이용해 주세요!"
+        ></textarea>
+        <p class="mt-1 text-xs text-ink-400">{{ maintenanceMessage.length }}/300</p>
+      </div>
+      <p v-if="maintenanceEnabled" class="text-xs font-medium text-rose-600">
+        ⚠️ 저장하면 즉시 모든 사용자의 앱 사용이 차단됩니다. 점검이 끝나면 반드시 꺼주세요.
+      </p>
     </div>
 
     <div class="flex items-center gap-3">
