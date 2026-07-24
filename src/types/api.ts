@@ -73,7 +73,8 @@ export interface AdminDiary {
   date: string;
   weather: number;
   mood: number;
-  imageUrl: string | null;
+  /** 정렬 순 이미지 URL 목록. 구버전 서버 응답 대비 optional 로 둔다. */
+  imageUrls?: string[] | null;
   createdAt: string;
   updatedAt: string;
 }
