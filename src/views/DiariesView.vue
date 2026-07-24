@@ -19,6 +19,12 @@ const errorMessage = ref<string | null>(null);
 const selected = ref<AdminDiary | null>(null);
 const confirmDelete = ref<AdminDiary | null>(null);
 const deleting = ref(false);
+/** 원본 크기로 크게 보기 위한 이미지 URL */
+const preview = ref<string | null>(null);
+
+function imagesOf(diary: AdminDiary | null): string[] {
+  return diary?.imageUrls ?? [];
+}
 
 async function load() {
   loading.value = true;
@@ -41,6 +47,7 @@ async function load() {
 
 async function openDetail(diary: AdminDiary) {
   try {
+    preview.value = null;
     selected.value = await adminApi.getDiary(diary.diaryId);
   } catch (err) {
     errorMessage.value = extractErrorMessage(err);
@@ -145,24 +152,48 @@ onMounted(load);
     </div>
 
     <Modal :open="!!selected" title="일기 상세" @close="selected = null">
-      <div v-if="selected" class="space-y-3 text-sm">
-        <div class="flex justify-between text-xs text-ink-400">
-          <span>{{ formatDateOnly(selected.date) }}</span>
-          <span>{{ selected.authorName }} · {{ selected.groupRoomName }}</span>
+      <div v-if="selected" class="space-y-4 text-sm">
+        <div class="max-h-[70vh] overflow-y-auto space-y-4 pr-1">
+          <p class="whitespace-pre-wrap text-ink-600 leading-relaxed">{{ selected.content }}</p>
+
+          <div v-if="imagesOf(selected).length" class="space-y-2">
+            <p class="text-xs text-ink-400">사진 {{ imagesOf(selected).length }}장</p>
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                v-for="(img, i) in imagesOf(selected)"
+                :key="i"
+                type="button"
+                class="block"
+                title="크게 보기"
+                @click="preview = img"
+              >
+                <img
+                  :src="img"
+                  :alt="`일기 사진 ${i + 1}`"
+                  loading="lazy"
+                  class="h-28 w-full rounded-lg border border-ink-100 object-cover"
+                />
+              </button>
+            </div>
+          </div>
+          <p v-else class="text-xs text-ink-400">첨부된 사진이 없습니다.</p>
         </div>
-        <h3 class="text-lg font-semibold text-ink-700">{{ selected.title }}</h3>
-        <p class="whitespace-pre-wrap text-ink-600 leading-relaxed">{{ selected.content }}</p>
-        <img
-          v-if="selected.imageUrl"
-          :src="selected.imageUrl"
-          alt="diary image"
-          class="rounded-lg border border-ink-100 max-h-64 object-cover"
-        />
+
         <div class="flex justify-end">
           <button class="btn-outline" @click="selected = null">닫기</button>
         </div>
       </div>
     </Modal>
+
+    <Teleport to="body">
+      <div
+        v-if="preview"
+        class="fixed inset-0 z-[60] grid place-items-center bg-ink-950/80 p-4"
+        @click="preview = null"
+      >
+        <img :src="preview" alt="일기 사진 원본" class="max-h-[90vh] max-w-full rounded-lg" />
+      </div>
+    </Teleport>
 
     <Modal :open="!!confirmDelete" title="일기 삭제 확인" @close="confirmDelete = null">
       <div v-if="confirmDelete" class="space-y-4 text-sm">
