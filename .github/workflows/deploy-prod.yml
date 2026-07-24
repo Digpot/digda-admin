@@ -1,9 +1,10 @@
 name: Vercel Production Deploy
 
-# main 에 푸시(머지)될 때마다 Vercel 프로덕션으로 자동 배포한다.
+# dev 에 푸시(머지)될 때마다 Vercel 프로덕션으로 자동 배포한다.
+# (앱/서버와 동일하게 배포 기준 브랜치 = dev. main 은 릴리스 스냅샷 보관용)
 on:
   push:
-    branches: [main]
+    branches: [dev]
   workflow_dispatch: {}
 
 concurrency:
