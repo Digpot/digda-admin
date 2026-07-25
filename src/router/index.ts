@@ -90,7 +90,13 @@ const routes: RouteRecordRaw[] = [
         path: "/app-config",
         name: "app-config",
         component: () => import("@/views/AppConfigView.vue"),
-        meta: { title: "대공지 · 피드백" }
+        meta: { title: "대공지 · 개발자 소개" }
+      },
+      {
+        path: "/feedback",
+        name: "feedback",
+        component: () => import("@/views/FeedbackView.vue"),
+        meta: { title: "피드백 관리" }
       },
       {
         path: "/db",
