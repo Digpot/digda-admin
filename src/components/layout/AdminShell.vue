@@ -19,6 +19,7 @@ import {
   SpeakerWaveIcon,
   FlagIcon,
   ChatBubbleLeftRightIcon,
+  ChatBubbleBottomCenterTextIcon,
   TrashIcon
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/stores/auth";
@@ -40,7 +41,8 @@ const menu = [
   { to: "/nickname-exhibits", label: "별명 전시관", icon: PhotoIcon },
   { to: "/titles", label: "칭호 부여", icon: TrophyIcon },
   { to: "/region-map", label: "지도 채움", icon: MapIcon },
-  { to: "/app-config", label: "대공지 · 피드백", icon: SpeakerWaveIcon },
+  { to: "/app-config", label: "대공지 · 개발자 소개", icon: SpeakerWaveIcon },
+  { to: "/feedback", label: "피드백 관리", icon: ChatBubbleBottomCenterTextIcon },
   { to: "/diaries", label: "일기 관리", icon: BookOpenIcon },
   { to: "/reports", label: "신고 관리", icon: FlagIcon },
   { to: "/inquiries", label: "고객센터 문의", icon: ChatBubbleLeftRightIcon },

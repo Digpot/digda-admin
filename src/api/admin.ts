@@ -38,7 +38,10 @@ import type {
   AdminInquiry,
   InquiryStatus,
   AdminDeletionRequest,
-  DeletionRequestStatus
+  DeletionRequestStatus,
+  AdminFeedbackQuestion,
+  FeedbackQuestionItem,
+  AdminFeedbackSubmission
 } from "@/types/api";
 
 const API = "/api/admin";
@@ -316,5 +319,24 @@ export const adminApi = {
   answerInquiry: (inquiryId: number, answer: string) =>
     http
       .patch<AdminInquiry>(`${API}/inquiries/${inquiryId}/answer`, { answer })
+      .then((r) => r.data),
+
+  // ── Feedback (앱 자체 피드백 폼) ──
+
+  getFeedbackQuestions: () =>
+    http
+      .get<AdminFeedbackQuestion[]>(`${API}/feedback/questions`)
+      .then((r) => r.data),
+
+  saveFeedbackQuestions: (questions: FeedbackQuestionItem[]) =>
+    http
+      .put<AdminFeedbackQuestion[]>(`${API}/feedback/questions`, { questions })
+      .then((r) => r.data),
+
+  searchFeedbackSubmissions: (params: { page?: number; size?: number }) =>
+    http
+      .get<AdminPageResponse<AdminFeedbackSubmission>>(`${API}/feedback/submissions`, {
+        params
+      })
       .then((r) => r.data)
 };

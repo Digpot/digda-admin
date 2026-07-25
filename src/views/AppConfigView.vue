@@ -93,13 +93,14 @@ onMounted(load);
       </div>
     </div>
 
-    <!-- 피드백 -->
+    <!-- 개발자 소개 -->
     <div class="card p-5 space-y-4">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="font-semibold text-ink-800">피드백 받기</h2>
+          <h2 class="font-semibold text-ink-800">개발자 소개</h2>
           <p class="text-xs text-ink-400 mt-0.5">
-            마이페이지 하단 "피드백 받기" 메뉴 노출 여부와 이동할 폼 URL.
+            마이페이지 하단 "개발자 소개" 메뉴 노출 여부와 이동할 링크.
+            (피드백은 이제 앱 자체 폼 — "피드백 관리" 메뉴에서 편집)
           </p>
         </div>
         <label class="flex items-center gap-2 text-sm text-ink-600 shrink-0">
@@ -108,11 +109,11 @@ onMounted(load);
         </label>
       </div>
       <div>
-        <label class="label">구글 폼 URL</label>
+        <label class="label">개발자 소개 링크</label>
         <input
           v-model="feedbackUrl"
           class="input"
-          placeholder="https://forms.gle/..."
+          placeholder="https://..."
         />
       </div>
     </div>

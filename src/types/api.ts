@@ -73,7 +73,8 @@ export interface AdminDiary {
   date: string;
   weather: number;
   mood: number;
-  imageUrl: string | null;
+  /** 정렬 순 이미지 URL 목록. 구버전 서버 응답 대비 optional 로 둔다. */
+  imageUrls?: string[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -341,6 +342,53 @@ export interface AdminInquiry {
   answer: string | null;
   createdAt: string;
   answeredAt: string | null;
+}
+
+// ── Feedback (앱 자체 피드백 폼) ──
+
+export type FeedbackQuestionType =
+  | "SECTION"
+  | "SHORT_TEXT"
+  | "PARAGRAPH"
+  | "SINGLE_CHOICE"
+  | "SCALE"
+  | "GRID";
+
+export interface AdminFeedbackQuestion {
+  id: number;
+  order: number;
+  type: FeedbackQuestionType;
+  title: string;
+  description: string | null;
+  required: boolean;
+  /** 유형별 옵션 JSON 문자열 (SINGLE_CHOICE=["a"], SCALE={min,max}, GRID={rows,cols}) */
+  options: string | null;
+  active: boolean;
+}
+
+/** 문항 저장(전체 교체) 요청의 개별 항목. */
+export interface FeedbackQuestionItem {
+  type: FeedbackQuestionType;
+  title: string;
+  description: string | null;
+  required: boolean;
+  options: string | null;
+  active: boolean;
+}
+
+export interface AdminFeedbackAnswer {
+  questionId: number | null;
+  title: string;
+  type: string;
+  answer: string;
+}
+
+export interface AdminFeedbackSubmission {
+  submissionId: number;
+  userId: string | null;
+  userName: string | null;
+  answers: AdminFeedbackAnswer[];
+  createdAt: string;
 }
 
 // ── Deletion request (계정/데이터 삭제 요청) ──
