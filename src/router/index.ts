@@ -87,6 +87,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: "지도 채움" }
       },
       {
+        path: "/events",
+        name: "events",
+        component: () => import("@/views/EventsView.vue"),
+        meta: { title: "이벤트 관리" }
+      },
+      {
         path: "/app-config",
         name: "app-config",
         component: () => import("@/views/AppConfigView.vue"),
