@@ -8,6 +8,7 @@ import Modal from "@/components/ui/Modal.vue";
 import { formatDate } from "@/utils/format";
 import PiiText from "@/components/pii/PiiText.vue";
 import { userPii } from "@/composables/usePiiReveal";
+import IdText from "@/components/pii/IdText.vue";
 
 const statusFilter = ref<InquiryStatus | "">("");
 const page = ref(0);
@@ -144,7 +145,7 @@ onMounted(load);
               <td class="align-top">
                 <div class="text-ink-700 font-medium"><PiiText :value="q.userName" :target="userPii(q.userId)" /></div>
                 <div class="tabular-nums text-ink-400 text-xs">
-                  {{ q.userId }}
+                  <IdText :id="q.userId" />
                 </div>
               </td>
               <td class="align-top">
@@ -207,7 +208,7 @@ onMounted(load);
               <PiiText :value="detailTarget.userName" :target="userPii(detailTarget.userId)" />
             </p>
             <p class="tabular-nums text-ink-400 text-xs truncate">
-              {{ detailTarget.userId }}
+              <IdText :id="detailTarget.userId" />
             </p>
           </div>
           <span

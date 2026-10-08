@@ -5,6 +5,7 @@ import { extractErrorMessage } from "@/api/http";
 import type { UserActionLog, UserActionType } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
 import { formatDate, truncate } from "@/utils/format";
+import IdText from "@/components/pii/IdText.vue";
 
 const actions: UserActionType[] = [
   "LOGIN",
@@ -135,7 +136,7 @@ onMounted(load);
             <tr v-for="log in rows" :key="log.logId">
               <td class="tabular-nums text-ink-500">{{ formatDate(log.createdAt) }}</td>
               <td class="font-mono text-xs text-ink-500">
-                {{ log.actorId ?? "system" }}
+                <IdText v-if="log.actorId" :id="log.actorId" /><template v-else>system</template>
               </td>
               <td>
                 <span class="badge bg-ink-100 text-ink-600 font-mono text-[10px]">
@@ -144,7 +145,7 @@ onMounted(load);
               </td>
               <td class="text-ink-500">
                 <span v-if="log.targetType">{{ log.targetType }}</span>
-                <span v-if="log.targetId" class="text-ink-700"> · {{ log.targetId }}</span>
+                <span v-if="log.targetId" class="text-ink-700"> · <IdText :id="log.targetId" label="대상 ID" /></span>
                 <span v-if="!log.targetType && !log.targetId">-</span>
               </td>
               <td class="text-ink-500">{{ truncate(log.detail, 80) }}</td>
