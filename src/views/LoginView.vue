@@ -7,21 +7,23 @@ import { extractErrorMessage } from "@/api/http";
 const email = ref("");
 const password = ref("");
 const loading = ref(false);
-const errorMessage = ref<string | null>(null);
 
 const auth = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 
 async function onSubmit() {
-  errorMessage.value = null;
+  if (loading.value) return;
   loading.value = true;
   try {
     await auth.login({ email: email.value.trim(), password: password.value });
     const redirect = (route.query.redirect as string | undefined) ?? "/dashboard";
     router.replace(redirect);
   } catch (err) {
-    errorMessage.value = extractErrorMessage(err, "로그인에 실패했습니다.");
+    // 실패 안내는 alert 로 띄운다. 비밀번호 칸은 비워 다시 입력하게 한다.
+    password.value = "";
+    loading.value = false;
+    window.alert(extractErrorMessage(err, "로그인에 실패했습니다."));
   } finally {
     loading.value = false;
   }
@@ -97,13 +99,6 @@ async function onSubmit() {
             />
           </div>
         </div>
-
-        <p
-          v-if="errorMessage"
-          class="text-sm text-rose-600 bg-rose-50 border border-rose-100 rounded-lg px-3 py-2"
-        >
-          {{ errorMessage }}
-        </p>
 
         <button type="submit" class="btn-primary w-full justify-center" :disabled="loading">
           {{ loading ? "로그인 중..." : "로그인" }}

@@ -126,10 +126,29 @@ export interface ApiError {
   message?: string;
 }
 
+/** 서버 에러 본문은 `{ error: { code, message } }` 로 감싸져 온다. 예전 평평한 형태도 함께 받는다. */
+type ApiErrorBody = ApiError & { error?: ApiError };
+
+/** 서버가 본문을 못 준 경우(게이트웨이·네트워크)에도 axios 영문 문구 대신 보여 줄 안내. */
+const STATUS_MESSAGES: Record<number, string> = {
+  401: "인증에 실패했습니다. 다시 로그인해 주세요.",
+  403: "권한이 없습니다.",
+  404: "요청한 정보를 찾을 수 없습니다.",
+  429: "시도 횟수를 초과했습니다. 10분 뒤 다시 시도해 주세요.",
+  500: "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+  502: "서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.",
+  503: "서버 점검 중입니다. 잠시 후 다시 시도해 주세요."
+};
+
 export function extractErrorMessage(err: unknown, fallback = "요청을 처리하지 못했습니다."): string {
   if (axios.isAxiosError(err)) {
-    const data = err.response?.data as ApiError | undefined;
-    return data?.message ?? data?.code ?? err.message ?? fallback;
+    const data = err.response?.data as ApiErrorBody | undefined;
+    const serverMessage = data?.error?.message ?? data?.message;
+    if (serverMessage) return serverMessage;
+    const status = err.response?.status;
+    if (status && STATUS_MESSAGES[status]) return STATUS_MESSAGES[status];
+    if (!err.response) return "서버에 연결할 수 없습니다. 네트워크를 확인해 주세요.";
+    return fallback;
   }
   return fallback;
 }
