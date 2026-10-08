@@ -13,6 +13,8 @@ import { formatDate } from "@/utils/format";
 import PiiText from "@/components/pii/PiiText.vue";
 import { userPii } from "@/composables/usePiiReveal";
 import { safeUrl } from "@/utils/safeUrl";
+import IdText from "@/components/pii/IdText.vue";
+import { requestAdminPassword } from "@/composables/usePasswordGate";
 
 const statusFilter = ref<ReportStatus | "">("");
 const typeFilter = ref<ReportTargetType | "">("");
@@ -95,7 +97,7 @@ const restricting = ref<number | null>(null);
 
 async function toggleRestrictReportedUser(report: AdminReport) {
   if (!report.reportedUserId) return;
-  const name = report.reportedUserName ?? report.reportedUserId;
+  const name = report.reportedUserName ?? "이 사용자";
   const next = !report.reportedUserRestricted;
   const ok = window.confirm(
     next
@@ -128,10 +130,19 @@ async function toggleRestrictReportedUser(report: AdminReport) {
 // 신고된 콘텐츠 원본 펼치기 — 어드민이 실제 내용을 보고 판단한다.
 const expanded = ref<Set<number>>(new Set());
 
-function toggleContent(reportId: number) {
+async function toggleContent(reportId: number) {
   const next = new Set(expanded.value);
-  if (next.has(reportId)) next.delete(reportId);
-  else next.add(reportId);
+  if (next.has(reportId)) {
+    next.delete(reportId);
+  } else {
+    // 신고된 일기·댓글 원문은 열 때마다 관리자 비밀번호를 다시 묻는다.
+    const ok = await requestAdminPassword({
+      title: "신고된 원문 보기",
+      description: "신고된 일기·댓글·일정의 원문입니다. 관리자 비밀번호를 다시 입력해 주세요."
+    });
+    if (!ok) return;
+    next.add(reportId);
+  }
   expanded.value = next;
 }
 
@@ -213,7 +224,7 @@ onMounted(load);
               <td>
                 <div class="text-ink-700 font-medium"><PiiText :value="r.reporterName" :target="userPii(r.reporterId)" /></div>
                 <div class="tabular-nums text-ink-400 text-xs">
-                  {{ r.reporterId }}
+                  <IdText :id="r.reporterId" />
                 </div>
               </td>
               <td>
@@ -222,14 +233,14 @@ onMounted(load);
                     <PiiText :value="r.reportedUserName" :target="userPii(r.reportedUserId)" fallback="(이름 없음)" />
                   </div>
                   <div class="tabular-nums text-ink-400 text-xs">
-                    {{ r.reportedUserId }}
+                    <IdText :id="r.reportedUserId" />
                   </div>
                 </template>
                 <span v-else class="text-ink-300 text-xs">-</span>
               </td>
               <td class="text-ink-500">{{ TYPE_LABEL[r.targetType] }}</td>
               <td class="tabular-nums text-ink-400 text-xs">
-                {{ r.targetId }}
+                <IdText :id="r.targetId" label="대상 ID" />
                 <span v-if="r.groupRoomId" class="text-ink-300">
                   (그룹 {{ r.groupRoomId }})
                 </span>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { adminApi } from "@/api/admin";
 import { extractErrorMessage } from "@/api/http";
 import type { AdminColumnInfo, AdminTableInfo, AdminTableRows } from "@/types/api";
@@ -8,6 +8,8 @@ import Modal from "@/components/ui/Modal.vue";
 import { formatNumber } from "@/utils/format";
 import PiiText from "@/components/pii/PiiText.vue";
 import type { PiiTarget } from "@/types/api";
+import { LockClosedIcon } from "@heroicons/vue/24/outline";
+import { requestAdminPassword } from "@/composables/usePasswordGate";
 
 const tables = ref<AdminTableInfo[]>([]);
 const selected = ref<string | null>(null);
@@ -209,11 +211,50 @@ watch([page, size], () => {
   if (selected.value) loadDetail();
 });
 
-onMounted(loadTables);
+// ── 잠금 ──
+// DB 탭은 전 테이블을 읽고 쓸 수 있어서 들어올 때마다 관리자 비밀번호를 다시 묻는다.
+// 풀린 상태는 이 화면에만 있다 — 다른 탭으로 나갔다 오거나 10분이 지나면 다시 잠긴다.
+const UNLOCK_MS = 10 * 60 * 1000;
+const unlocked = ref(false);
+let relockTimer: ReturnType<typeof setTimeout> | null = null;
+
+function lock() {
+  unlocked.value = false;
+  tables.value = [];
+  selected.value = null;
+  columns.value = [];
+  rowData.value = null;
+  editorOpen.value = false;
+  if (relockTimer) clearTimeout(relockTimer);
+  relockTimer = null;
+}
+
+async function unlock() {
+  const ok = await requestAdminPassword({
+    title: "DB 테이블 조회",
+    description: "DB 테이블은 모든 데이터를 읽고 수정할 수 있습니다. 관리자 비밀번호를 다시 입력해 주세요."
+  });
+  if (!ok) return;
+  unlocked.value = true;
+  if (relockTimer) clearTimeout(relockTimer);
+  relockTimer = setTimeout(lock, UNLOCK_MS);
+  await loadTables();
+}
+
+onMounted(unlock);
+onBeforeUnmount(lock);
 </script>
 
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4">
+  <div v-if="!unlocked" class="card mx-auto mt-10 max-w-md p-8 text-center space-y-4">
+    <LockClosedIcon class="mx-auto h-10 w-10 text-ink-300" aria-hidden="true" />
+    <div>
+      <p class="text-base font-semibold text-ink-700">잠겨 있는 화면입니다</p>
+      <p class="mt-1 text-sm text-ink-500">관리자 비밀번호를 다시 확인해야 DB 테이블을 볼 수 있습니다.</p>
+    </div>
+    <button type="button" class="btn-primary" @click="unlock">비밀번호 입력</button>
+  </div>
+  <div v-else class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4">
     <aside class="card p-3 h-fit sticky top-20">
       <input v-model="filter" class="input mb-3" placeholder="테이블 검색" />
       <div class="max-h-[70vh] overflow-y-auto">

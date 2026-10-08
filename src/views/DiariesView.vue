@@ -5,10 +5,11 @@ import { extractErrorMessage } from "@/api/http";
 import type { AdminDiary } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
 import Modal from "@/components/ui/Modal.vue";
-import { formatDate, formatDateOnly, truncate } from "@/utils/format";
+import { formatDate, formatDateOnly } from "@/utils/format";
 import PiiText from "@/components/pii/PiiText.vue";
 import { userPii } from "@/composables/usePiiReveal";
 import { safeUrl } from "@/utils/safeUrl";
+import { requestAdminPassword } from "@/composables/usePasswordGate";
 
 const keyword = ref("");
 const page = ref(0);
@@ -48,7 +49,20 @@ async function load() {
   }
 }
 
+/** 목록에서는 일기 제목을 앞 2글자만 보여 준다 — 전문은 비밀번호 확인 후 상세에서. */
+function maskTitle(title: string | null | undefined): string {
+  if (!title) return "-";
+  const chars = Array.from(title.trim());
+  return `${chars.slice(0, Math.min(2, Math.max(1, chars.length - 1))).join("")}***`;
+}
+
 async function openDetail(diary: AdminDiary) {
+  // 일기는 사용자의 사적인 글이라 상세를 열 때마다 관리자 비밀번호를 다시 묻는다.
+  const ok = await requestAdminPassword({
+    title: "일기 상세 보기",
+    description: "사용자의 일기 본문과 사진입니다. 관리자 비밀번호를 다시 입력해 주세요."
+  });
+  if (!ok) return;
   try {
     preview.value = null;
     selected.value = await adminApi.getDiary(diary.diaryId);
@@ -120,7 +134,7 @@ onMounted(load);
             </tr>
             <tr v-for="d in rows" :key="d.diaryId">
               <td class="tabular-nums text-ink-500">{{ formatDateOnly(d.date) }}</td>
-              <td class="font-medium text-ink-700">{{ truncate(d.title, 36) }}</td>
+              <td class="font-medium text-ink-700">{{ maskTitle(d.title) }}</td>
               <td class="text-ink-500"><PiiText :value="d.authorName" :target="userPii(d.createdBy)" /></td>
               <td class="text-ink-500">{{ d.groupRoomName }}</td>
               <td class="tabular-nums text-ink-500">{{ formatDate(d.createdAt) }}</td>
