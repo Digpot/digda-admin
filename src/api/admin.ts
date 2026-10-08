@@ -15,6 +15,7 @@ import type {
   AdminTableRows,
   AdminUpdateCharacterRequest,
   AdminUpsertRowRequest,
+  CoinGrant,
   AdminUser,
   AdminUserTitle,
   AdminWriteResult,
@@ -22,10 +23,13 @@ import type {
   CreateNicknameExhibitRequest,
   TitleCatalogItem,
   DashboardSummary,
+  ExpEvent,
+  GrantCoinRequest,
   GroupRoomAction,
   Role,
   SendAnnouncementRequest,
   SendAnnouncementResponse,
+  UpdateExpEventRequest,
   UpdateNicknameExhibitRequest,
   UploadImageResponse,
   UserActionLog,
@@ -247,6 +251,22 @@ export const adminApi = {
 
   updateAppConfig: (body: AppConfig) =>
     http.put<AppConfig>(`${API}/app-config`, body).then((r) => r.data),
+
+  // ── Event (시즌 이벤트: 경험치 배수 · 코인 전체 지급) ──
+
+  getExpEvent: () => http.get<ExpEvent>(`${API}/events/exp`).then((r) => r.data),
+
+  updateExpEvent: (body: UpdateExpEventRequest) =>
+    http.put<ExpEvent>(`${API}/events/exp`, body).then((r) => r.data),
+
+  /** 되돌릴 수 없는 일괄 지급 — 화면에서 확인 모달을 거친 뒤에만 호출한다. */
+  grantCoin: (body: GrantCoinRequest) =>
+    http.post<CoinGrant>(`${API}/events/coin-grants`, body).then((r) => r.data),
+
+  searchCoinGrants: (params: { page?: number; size?: number }) =>
+    http
+      .get<AdminPageResponse<CoinGrant>>(`${API}/events/coin-grants`, { params })
+      .then((r) => r.data),
 
   // ── Region Map (지도 채움) ──
 

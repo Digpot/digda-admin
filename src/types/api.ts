@@ -407,3 +407,47 @@ export interface AdminDeletionRequest {
   handledAt: string | null;
 }
 
+
+// ── Event (시즌 이벤트: 경험치 배수 · 코인 전체 지급) ──
+
+export interface ExpEvent {
+  /** 어드민이 설정한 스위치 */
+  enabled: boolean;
+  /** 지금 실제로 배수가 먹는 중인지 (enabled && 기간 안 && 배수>1) */
+  active: boolean;
+  /** 앱 배너 문구 */
+  title: string;
+  multiplier: number;
+  /** 현재 적용 중인 배수 — 비활성이면 1.0 */
+  appliedMultiplier: number;
+  /** naive LocalDateTime (KST). null = 제한 없음 */
+  startAt: string | null;
+  endAt: string | null;
+}
+
+export interface UpdateExpEventRequest {
+  enabled: boolean;
+  title: string;
+  multiplier: number;
+  startAt: string | null;
+  endAt: string | null;
+}
+
+export interface CoinGrant {
+  coinGrantId: number;
+  /** 그룹(모찌) 1개당 지급한 코인 */
+  amount: number;
+  reason: string;
+  targetCount: number;
+  notified: boolean;
+  grantedBy: string;
+  createdAt: string;
+}
+
+export interface GrantCoinRequest {
+  amount: number;
+  reason: string;
+  notify: boolean;
+  notificationTitle?: string;
+  notificationBody?: string;
+}
