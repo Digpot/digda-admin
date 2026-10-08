@@ -11,6 +11,7 @@ import { extractErrorMessage } from "@/api/http";
 import type { UserActionLog, DashboardSummary } from "@/types/api";
 import StatCard from "@/components/ui/StatCard.vue";
 import { formatDate, formatNumber, truncate } from "@/utils/format";
+import IdText from "@/components/pii/IdText.vue";
 
 const loading = ref(true);
 const errorMessage = ref<string | null>(null);
@@ -219,7 +220,7 @@ onMounted(load);
               </td>
               <td>
                 <span class="text-ink-500">{{ log.targetType ?? "-" }}</span>
-                <span v-if="log.targetId" class="text-ink-700"> · {{ log.targetId }}</span>
+                <span v-if="log.targetId" class="text-ink-700"> · <IdText :id="log.targetId" label="대상 ID" /></span>
               </td>
               <td>{{ truncate(log.detail, 60) }}</td>
             </tr>

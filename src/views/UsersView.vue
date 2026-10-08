@@ -8,6 +8,7 @@ import Modal from "@/components/ui/Modal.vue";
 import { formatDate } from "@/utils/format";
 import PiiText from "@/components/pii/PiiText.vue";
 import { userPii } from "@/composables/usePiiReveal";
+import IdText from "@/components/pii/IdText.vue";
 
 const keyword = ref("");
 const role = ref<Role | "">("");
@@ -147,7 +148,7 @@ onMounted(load);
             </tr>
             <tr v-for="u in rows" :key="u.userId">
               <td class="font-medium text-ink-700"><PiiText :value="u.name" :target="userPii(u.userId)" /></td>
-              <td class="tabular-nums text-ink-400 text-xs">{{ u.userId }}</td>
+              <td class="text-ink-400 text-xs"><IdText :id="u.userId" /></td>
               <td class="text-ink-500"><PiiText :value="u.email" :target="userPii(u.userId)" /></td>
               <td class="text-ink-500 uppercase text-xs">{{ u.socialProvider }}</td>
               <td>
@@ -217,7 +218,7 @@ onMounted(load);
       <div v-if="editTarget" class="space-y-4 text-sm">
         <div class="rounded-lg bg-ink-50 p-3">
           <p class="text-ink-700 font-medium"><PiiText :value="editTarget.name" :target="userPii(editTarget.userId)" /></p>
-          <p class="text-ink-400 text-xs"><PiiText :value="editTarget.email" :target="userPii(editTarget.userId)" :fallback="editTarget.userId" /></p>
+          <p class="text-ink-400 text-xs"><PiiText :value="editTarget.email" :target="userPii(editTarget.userId)" /></p>
         </div>
         <div>
           <label class="label">권한</label>
@@ -243,7 +244,7 @@ onMounted(load);
       <div v-if="restrictTarget" class="space-y-4 text-sm">
         <div class="rounded-lg bg-ink-50 p-3">
           <p class="text-ink-700 font-medium"><PiiText :value="restrictTarget.name" :target="userPii(restrictTarget.userId)" /></p>
-          <p class="text-ink-400 text-xs">{{ restrictTarget.userId }}</p>
+          <p class="text-ink-400 text-xs"><IdText :id="restrictTarget.userId" /></p>
         </div>
         <p v-if="!restrictTarget.restricted" class="text-ink-600 leading-relaxed">
           이 사용자를 <b class="text-rose-600">서비스 이용 제한</b> 상태로 전환합니다.

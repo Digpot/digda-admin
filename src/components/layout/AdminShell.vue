@@ -25,6 +25,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/stores/auth";
 import PiiRevealModal from "@/components/pii/PiiRevealModal.vue";
+import PasswordGateModal from "@/components/pii/PasswordGateModal.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -95,16 +96,37 @@ watch(
   }
 );
 
+// ── 자리 비움 자동 로그아웃 ──
+// 30분 동안 마우스·키보드 조작이 없으면 로그아웃한다. 켜 둔 채 자리를 비운 PC 에서
+// 다른 사람이 어드민을 그대로 쓰지 못하게.
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+const ACTIVITY_EVENTS = ["mousedown", "keydown", "wheel", "touchstart"] as const;
+let idleTimer: ReturnType<typeof setTimeout> | null = null;
+
+function onIdle() {
+  logout();
+  window.alert("30분 동안 사용하지 않아 자동으로 로그아웃되었습니다.");
+}
+
+function resetIdleTimer() {
+  if (idleTimer) clearTimeout(idleTimer);
+  idleTimer = setTimeout(onIdle, IDLE_LIMIT_MS);
+}
+
 onMounted(() => {
   mq = window.matchMedia("(min-width: 1024px)");
   applyMq(mq);
   mq.addEventListener("change", applyMq);
   document.addEventListener("click", onDocClick);
+  ACTIVITY_EVENTS.forEach((e) => window.addEventListener(e, resetIdleTimer, { passive: true }));
+  resetIdleTimer();
 });
 
 onBeforeUnmount(() => {
   mq?.removeEventListener("change", applyMq);
   document.removeEventListener("click", onDocClick);
+  ACTIVITY_EVENTS.forEach((e) => window.removeEventListener(e, resetIdleTimer));
+  if (idleTimer) clearTimeout(idleTimer);
 });
 </script>
 
@@ -213,6 +235,7 @@ onBeforeUnmount(() => {
       <main class="flex-1 p-4 lg:p-6 min-w-0">
         <RouterView />
         <PiiRevealModal />
+        <PasswordGateModal />
       </main>
     </div>
   </div>
