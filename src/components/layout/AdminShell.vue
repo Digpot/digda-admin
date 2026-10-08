@@ -24,6 +24,7 @@ import {
   TrashIcon
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/stores/auth";
+import PiiRevealModal from "@/components/pii/PiiRevealModal.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -211,6 +212,7 @@ onBeforeUnmount(() => {
 
       <main class="flex-1 p-4 lg:p-6 min-w-0">
         <RouterView />
+        <PiiRevealModal />
       </main>
     </div>
   </div>

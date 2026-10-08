@@ -6,6 +6,8 @@ import type { AdminAnnouncement, AdminUser, AnnouncementTarget } from "@/types/a
 import Modal from "@/components/ui/Modal.vue";
 import Pagination from "@/components/ui/Pagination.vue";
 import { formatDate, formatNumber, truncate } from "@/utils/format";
+import PiiText from "@/components/pii/PiiText.vue";
+import { userPii } from "@/composables/usePiiReveal";
 
 type Tab = "send" | "list";
 const tab = ref<Tab>("send");
@@ -238,8 +240,8 @@ onMounted(() => {
             :key="u.userId"
             class="inline-flex items-center gap-2 rounded-full bg-ink-100 px-3 py-1 text-xs"
           >
-            <span class="font-medium text-ink-700">{{ u.name }}</span>
-            <span class="text-ink-400">{{ u.email ?? "-" }}</span>
+            <span class="font-medium text-ink-700"><PiiText :value="u.name" :target="userPii(u.userId)" /></span>
+            <span class="text-ink-400"><PiiText :value="u.email" :target="userPii(u.userId)" /></span>
             <button
               type="button"
               class="text-ink-400 hover:text-rose-500"
@@ -389,8 +391,8 @@ onMounted(() => {
                     @click.stop="toggleUser(u)"
                   />
                 </td>
-                <td class="text-ink-700">{{ u.name }}</td>
-                <td class="text-ink-500">{{ u.email ?? "-" }}</td>
+                <td class="text-ink-700"><PiiText :value="u.name" :target="userPii(u.userId)" /></td>
+                <td class="text-ink-500"><PiiText :value="u.email" :target="userPii(u.userId)" /></td>
                 <td>
                   <span class="badge bg-ink-100 text-ink-600 text-[10px]">{{ u.role }}</span>
                 </td>

@@ -6,6 +6,8 @@ import type { AdminGroupRoom } from "@/types/api";
 import { REGION_GROUPS } from "@/data/regions";
 import Pagination from "@/components/ui/Pagination.vue";
 import Modal from "@/components/ui/Modal.vue";
+import PiiText from "@/components/pii/PiiText.vue";
+import { userPii } from "@/composables/usePiiReveal";
 
 const keyword = ref("");
 const page = ref(0);
@@ -155,7 +157,7 @@ onMounted(load);
             </tr>
             <tr v-for="g in rows" :key="g.groupRoomId">
               <td class="font-medium text-ink-700">{{ g.name }}</td>
-              <td class="text-ink-500">{{ g.ownerName }}</td>
+              <td class="text-ink-500"><PiiText :value="g.ownerName" :target="userPii(g.ownerId)" /></td>
               <td class="text-right pr-4">
                 <button class="btn-outline px-3 py-1.5 text-xs" @click="openManage(g)">
                   지도 관리

@@ -6,6 +6,8 @@ import type { AdminInquiry, InquiryStatus } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
 import Modal from "@/components/ui/Modal.vue";
 import { formatDate } from "@/utils/format";
+import PiiText from "@/components/pii/PiiText.vue";
+import { userPii } from "@/composables/usePiiReveal";
 
 const statusFilter = ref<InquiryStatus | "">("");
 const page = ref(0);
@@ -140,7 +142,7 @@ onMounted(load);
                 {{ formatDate(q.createdAt) }}
               </td>
               <td class="align-top">
-                <div class="text-ink-700 font-medium">{{ q.userName }}</div>
+                <div class="text-ink-700 font-medium"><PiiText :value="q.userName" :target="userPii(q.userId)" /></div>
                 <div class="tabular-nums text-ink-400 text-xs">
                   {{ q.userId }}
                 </div>
@@ -202,7 +204,7 @@ onMounted(load);
         <div class="flex items-center justify-between gap-2">
           <div class="min-w-0">
             <p class="text-ink-700 font-medium truncate">
-              {{ detailTarget.userName }}
+              <PiiText :value="detailTarget.userName" :target="userPii(detailTarget.userId)" />
             </p>
             <p class="tabular-nums text-ink-400 text-xs truncate">
               {{ detailTarget.userId }}

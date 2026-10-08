@@ -10,6 +10,9 @@ import type {
 } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
 import { formatDate } from "@/utils/format";
+import PiiText from "@/components/pii/PiiText.vue";
+import { userPii } from "@/composables/usePiiReveal";
+import { safeUrl } from "@/utils/safeUrl";
 
 const statusFilter = ref<ReportStatus | "">("");
 const typeFilter = ref<ReportTargetType | "">("");
@@ -208,7 +211,7 @@ onMounted(load);
                 {{ formatDate(r.createdAt) }}
               </td>
               <td>
-                <div class="text-ink-700 font-medium">{{ r.reporterName }}</div>
+                <div class="text-ink-700 font-medium"><PiiText :value="r.reporterName" :target="userPii(r.reporterId)" /></div>
                 <div class="tabular-nums text-ink-400 text-xs">
                   {{ r.reporterId }}
                 </div>
@@ -216,7 +219,7 @@ onMounted(load);
               <td>
                 <template v-if="r.reportedUserId">
                   <div class="text-ink-700 font-medium">
-                    {{ r.reportedUserName ?? "(이름 없음)" }}
+                    <PiiText :value="r.reportedUserName" :target="userPii(r.reportedUserId)" fallback="(이름 없음)" />
                   </div>
                   <div class="tabular-nums text-ink-400 text-xs">
                     {{ r.reportedUserId }}
@@ -317,19 +320,19 @@ onMounted(load);
                     <a
                       v-for="(img, i) in r.targetContent.images"
                       :key="i"
-                      :href="img"
+                      :href="safeUrl(img)"
                       target="_blank"
-                      rel="noopener"
+                      rel="noopener noreferrer"
                     >
                       <img
-                        :src="img"
+                        :src="safeUrl(img)"
                         class="h-24 w-24 rounded-lg object-cover border border-ink-100"
                         alt="신고된 사진"
                       />
                     </a>
                   </div>
                   <p class="text-xs text-ink-400 pt-1">
-                    작성자: {{ r.targetContent.authorName ?? "-" }}
+                    작성자: <PiiText :value="r.targetContent.authorName" :target="userPii(r.reportedUserId)" />
                     <span v-if="r.targetContent.createdAt">
                       · {{ formatDate(r.targetContent.createdAt) }}
                     </span>

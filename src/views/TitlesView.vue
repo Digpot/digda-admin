@@ -5,6 +5,8 @@ import { extractErrorMessage } from "@/api/http";
 import type { AdminUser, AdminUserTitle, TitleCatalogItem } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
 import Modal from "@/components/ui/Modal.vue";
+import PiiText from "@/components/pii/PiiText.vue";
+import { userPii } from "@/composables/usePiiReveal";
 
 const keyword = ref("");
 const page = ref(0);
@@ -134,8 +136,8 @@ onMounted(async () => {
               <td colspan="3" class="text-center text-ink-400 py-8">데이터가 없습니다.</td>
             </tr>
             <tr v-for="u in rows" :key="u.userId">
-              <td class="font-medium text-ink-700">{{ u.name }}</td>
-              <td class="text-ink-500">{{ u.email ?? "-" }}</td>
+              <td class="font-medium text-ink-700"><PiiText :value="u.name" :target="userPii(u.userId)" /></td>
+              <td class="text-ink-500"><PiiText :value="u.email" :target="userPii(u.userId)" /></td>
               <td class="text-right pr-4">
                 <button class="btn-outline px-3 py-1.5 text-xs" @click="openManage(u)">
                   칭호 관리
@@ -159,8 +161,8 @@ onMounted(async () => {
       <div v-if="selected" class="space-y-4 text-sm">
         <div class="rounded-lg bg-ink-50 p-3 flex items-center justify-between">
           <div>
-            <p class="text-ink-700 font-medium">{{ selected.name }}</p>
-            <p class="text-ink-400 text-xs">{{ selected.email ?? "-" }}</p>
+            <p class="text-ink-700 font-medium"><PiiText :value="selected.name" :target="userPii(selected.userId)" /></p>
+            <p class="text-ink-400 text-xs"><PiiText :value="selected.email" :target="userPii(selected.userId)" /></p>
           </div>
           <span class="badge bg-accent/10 text-accent">보유 {{ ownedCount }} / {{ catalog.length }}</span>
         </div>

@@ -6,6 +6,8 @@ import type { AdminSchedule } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
 import Modal from "@/components/ui/Modal.vue";
 import { formatDate, formatDateOnly } from "@/utils/format";
+import PiiText from "@/components/pii/PiiText.vue";
+import { userPii } from "@/composables/usePiiReveal";
 
 const keyword = ref("");
 const page = ref(0);
@@ -105,7 +107,7 @@ onMounted(load);
                 />
                 {{ s.title }}
               </td>
-              <td class="text-ink-500">{{ s.authorName }}</td>
+              <td class="text-ink-500"><PiiText :value="s.authorName" :target="userPii(s.createdBy)" /></td>
               <td class="text-ink-500">{{ s.groupRoomName }}</td>
               <td class="tabular-nums text-ink-500">{{ s.participantCount }}명</td>
               <td class="tabular-nums text-ink-500">{{ formatDate(s.createdAt) }}</td>
@@ -154,7 +156,7 @@ onMounted(load);
             {{ selected.allDay ? "" : selected.endTime ?? "" }}
           </dd>
           <dt class="text-ink-400">작성자</dt>
-          <dd>{{ selected.authorName }}</dd>
+          <dd><PiiText :value="selected.authorName" :target="userPii(selected.createdBy)" /></dd>
           <dt class="text-ink-400">그룹방</dt>
           <dd>{{ selected.groupRoomName }}</dd>
           <dt class="text-ink-400">참여자</dt>
