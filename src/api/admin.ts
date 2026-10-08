@@ -33,7 +33,9 @@ import type {
   UpdateNicknameExhibitRequest,
   UploadImageResponse,
   UserActionLog,
-  UserActionType
+  UserActionType,
+  RevealPiiRequest,
+  RevealPiiResponse
 } from "@/types/api";
 import type {
   AdminReport,
@@ -358,5 +360,10 @@ export const adminApi = {
       .get<AdminPageResponse<AdminFeedbackSubmission>>(`${API}/feedback/submissions`, {
         params
       })
-      .then((r) => r.data)
+      .then((r) => r.data),
+
+  // ── 개인정보 원문 열람 (관리자 비밀번호 재확인) ──
+
+  revealPii: (body: RevealPiiRequest) =>
+    http.post<RevealPiiResponse>(`${API}/pii/reveal`, body).then((r) => r.data)
 };

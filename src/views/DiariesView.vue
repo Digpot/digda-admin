@@ -6,6 +6,9 @@ import type { AdminDiary } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
 import Modal from "@/components/ui/Modal.vue";
 import { formatDate, formatDateOnly, truncate } from "@/utils/format";
+import PiiText from "@/components/pii/PiiText.vue";
+import { userPii } from "@/composables/usePiiReveal";
+import { safeUrl } from "@/utils/safeUrl";
 
 const keyword = ref("");
 const page = ref(0);
@@ -118,7 +121,7 @@ onMounted(load);
             <tr v-for="d in rows" :key="d.diaryId">
               <td class="tabular-nums text-ink-500">{{ formatDateOnly(d.date) }}</td>
               <td class="font-medium text-ink-700">{{ truncate(d.title, 36) }}</td>
-              <td class="text-ink-500">{{ d.authorName }}</td>
+              <td class="text-ink-500"><PiiText :value="d.authorName" :target="userPii(d.createdBy)" /></td>
               <td class="text-ink-500">{{ d.groupRoomName }}</td>
               <td class="tabular-nums text-ink-500">{{ formatDate(d.createdAt) }}</td>
               <td class="text-right pr-4 space-x-1.5">
@@ -168,7 +171,7 @@ onMounted(load);
                 @click="preview = img"
               >
                 <img
-                  :src="img"
+                  :src="safeUrl(img)"
                   :alt="`일기 사진 ${i + 1}`"
                   loading="lazy"
                   class="h-28 w-full rounded-lg border border-ink-100 object-cover"
@@ -191,7 +194,7 @@ onMounted(load);
         class="fixed inset-0 z-[60] grid place-items-center bg-ink-950/80 p-4"
         @click="preview = null"
       >
-        <img :src="preview" alt="일기 사진 원본" class="max-h-[90vh] max-w-full rounded-lg" />
+        <img :src="safeUrl(preview)" alt="일기 사진 원본" class="max-h-[90vh] max-w-full rounded-lg" />
       </div>
     </Teleport>
 

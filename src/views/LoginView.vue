@@ -4,7 +4,6 @@ import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { extractErrorMessage } from "@/api/http";
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const email = ref("");
 const password = ref("");
 const loading = ref(false);
@@ -109,10 +108,6 @@ async function onSubmit() {
         <button type="submit" class="btn-primary w-full justify-center" :disabled="loading">
           {{ loading ? "로그인 중..." : "로그인" }}
         </button>
-
-        <p class="text-xs text-ink-400 text-center">
-          API 베이스 URL: <code class="text-ink-500">{{ apiBaseUrl || "(미설정)" }}</code>
-        </p>
       </form>
     </div>
   </div>
