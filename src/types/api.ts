@@ -122,6 +122,8 @@ export interface AdminTableRows {
   totalElements: number;
   totalPages: number;
   rows: Array<Record<string, unknown>>;
+  /** 서버가 마스킹한 컬럼(개인정보·비밀값). 원문은 PII 열람 API(DB_ROW)로만. */
+  maskedColumns?: string[];
 }
 
 export interface AdminWriteResult {
@@ -450,4 +452,29 @@ export interface GrantCoinRequest {
   notify: boolean;
   notificationTitle?: string;
   notificationBody?: string;
+}
+
+// ── PII (개인정보 원문 열람) ──
+
+/**
+ * 어드민 응답의 이름·이메일은 서버가 마스킹해 내려준다(홍*동, ch******@naver.com).
+ * 원문은 관리자 비밀번호를 다시 확인하는 이 API 로만 볼 수 있다.
+ */
+export type PiiTargetType = "USER" | "DELETION_REQUEST" | "DB_ROW";
+
+export interface PiiTarget {
+  targetType: PiiTargetType;
+  /** USER=userId, DELETION_REQUEST=요청 ID */
+  targetId?: string;
+  /** DB_ROW 전용 */
+  table?: string;
+  pk?: Record<string, string>;
+}
+
+export interface RevealPiiRequest extends PiiTarget {
+  password: string;
+}
+
+export interface RevealPiiResponse {
+  fields: Record<string, string | null>;
 }

@@ -5,6 +5,7 @@ import { extractErrorMessage } from "@/api/http";
 import type { AdminDeletionRequest, DeletionRequestStatus } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
 import { formatDate } from "@/utils/format";
+import PiiText from "@/components/pii/PiiText.vue";
 
 type StatusFilter = "ALL" | DeletionRequestStatus;
 const statusFilter = ref<StatusFilter>("ALL");
@@ -112,7 +113,7 @@ onMounted(load);
                   {{ r.type === "ACCOUNT" ? "계정" : "데이터" }}
                 </span>
               </td>
-              <td class="text-ink-700">{{ r.email }}</td>
+              <td class="text-ink-700"><PiiText :value="r.email" :target="{ targetType: 'DELETION_REQUEST', targetId: String(r.id) }" /></td>
               <td class="text-ink-500">
                 <div v-if="r.type === 'DATA'">
                   <div class="font-medium text-ink-700">{{ r.groupRoomName }}</div>

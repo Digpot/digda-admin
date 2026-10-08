@@ -6,6 +6,8 @@ import type { AdminGroupRoom, GroupRoomAction } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
 import Modal from "@/components/ui/Modal.vue";
 import { formatDate } from "@/utils/format";
+import PiiText from "@/components/pii/PiiText.vue";
+import { userPii } from "@/composables/usePiiReveal";
 
 const keyword = ref("");
 const includeDeleted = ref(true);
@@ -119,7 +121,7 @@ onMounted(load);
             </tr>
             <tr v-for="room in rows" :key="room.groupRoomId">
               <td class="font-medium text-ink-700">{{ room.name }}</td>
-              <td class="text-ink-500">{{ room.ownerName }}</td>
+              <td class="text-ink-500"><PiiText :value="room.ownerName" :target="userPii(room.ownerId)" /></td>
               <td>
                 <span class="badge" :class="statusBadge(room).cls">
                   {{ statusBadge(room).label }}
@@ -170,7 +172,7 @@ onMounted(load);
       <div v-if="target" class="space-y-4 text-sm">
         <div class="rounded-lg bg-ink-50 p-3">
           <p class="text-ink-700 font-medium">{{ target.name }}</p>
-          <p class="text-ink-400 text-xs">방장 {{ target.ownerName }} · ID {{ target.groupRoomId }}</p>
+          <p class="text-ink-400 text-xs">방장 <PiiText :value="target.ownerName" :target="userPii(target.ownerId)" /> · ID {{ target.groupRoomId }}</p>
         </div>
         <p class="text-ink-600">
           다음 작업을 실행합니다:

@@ -9,6 +9,7 @@ import type {
 import Pagination from "@/components/ui/Pagination.vue";
 import Modal from "@/components/ui/Modal.vue";
 import { formatDate } from "@/utils/format";
+import PiiText from "@/components/pii/PiiText.vue";
 
 const keyword = ref("");
 const includeDeletedGroups = ref(false);
@@ -190,7 +191,7 @@ onMounted(load);
                   삭제된 그룹
                 </p>
               </td>
-              <td class="text-ink-500">{{ row.ownerName }}</td>
+              <td class="text-ink-500"><PiiText :value="row.ownerName" /></td>
               <td>
                 <span class="badge" :class="stageBadgeClass(row.stage)">
                   {{ row.stageDisplayName }}
@@ -268,7 +269,7 @@ onMounted(load);
             {{ editTarget.groupRoomName }}
           </p>
           <p class="text-ink-400 text-xs">
-            방장 {{ editTarget.ownerName }} · 그룹 ID
+            방장 <PiiText :value="editTarget.ownerName" /> · 그룹 ID
             {{ editTarget.groupRoomId }}
           </p>
         </div>

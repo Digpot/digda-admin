@@ -6,6 +6,8 @@ import type { AdminColumnInfo, AdminTableInfo, AdminTableRows } from "@/types/ap
 import Pagination from "@/components/ui/Pagination.vue";
 import Modal from "@/components/ui/Modal.vue";
 import { formatNumber } from "@/utils/format";
+import PiiText from "@/components/pii/PiiText.vue";
+import type { PiiTarget } from "@/types/api";
 
 const tables = ref<AdminTableInfo[]>([]);
 const selected = ref<string | null>(null);
@@ -23,8 +25,23 @@ const editorOpen = ref(false);
 const editorMode = ref<"create" | "edit">("create");
 const editorValues = ref<Record<string, string>>({});
 const editorOriginalPk = ref<Record<string, string>>({});
+// 수정 모드에서 처음 채워 둔 값. 저장 때 이것과 달라진 칸만 보낸다 —
+// 마스킹된 값(ch******@naver.com, [REDACTED])이 원문을 덮어쓰지 않게.
+const editorInitialValues = ref<Record<string, string>>({});
 const editorBusy = ref(false);
 const editorError = ref<string | null>(null);
+
+const maskedColumns = computed(() => new Set(rowData.value?.maskedColumns ?? []));
+
+/** 마스킹된 칸의 원문 열람 대상 — PK 가 없는 테이블은 행을 특정할 수 없어 열람 불가. */
+function rowPiiTarget(row: Record<string, unknown>): PiiTarget | null {
+  if (!selected.value || pkColumns.value.length === 0) return null;
+  return {
+    targetType: "DB_ROW",
+    table: selected.value,
+    pk: Object.fromEntries(pkColumns.value.map((c) => [c, valueToInput(row[c])]))
+  };
+}
 
 const pkColumns = computed(() => columns.value.filter((c) => c.columnKey === "PRI").map((c) => c.columnName));
 
@@ -129,6 +146,7 @@ function openEdit(row: Record<string, unknown>) {
   editorOriginalPk.value = Object.fromEntries(
     pkColumns.value.map((pk) => [pk, valueToInput(row[pk])])
   );
+  editorInitialValues.value = { ...editorValues.value };
   editorError.value = null;
   editorOpen.value = true;
 }
@@ -152,6 +170,14 @@ async function saveEditor() {
       const updateValues = { ...buildValuesPayload() };
       // PK는 update 페이로드에서 제거 (백엔드도 제외하지만 명시적으로)
       for (const pk of pkColumns.value) delete updateValues[pk];
+      // 손대지 않은 칸은 보내지 않는다(마스킹 값 덮어쓰기 방지 — 서버도 한 번 더 거른다).
+      for (const k of Object.keys(updateValues)) {
+        if (editorValues.value[k] === editorInitialValues.value[k]) delete updateValues[k];
+      }
+      if (Object.keys(updateValues).length === 0) {
+        editorOpen.value = false;
+        return;
+      }
       await adminApi.updateRow(selected.value, editorOriginalPk.value, { values: updateValues });
     }
     editorOpen.value = false;
@@ -309,7 +335,12 @@ onMounted(loadTables);
                     :key="col"
                     class="font-mono text-xs text-ink-600 whitespace-nowrap max-w-xs overflow-hidden text-ellipsis"
                   >
-                    {{ renderCell(row[col]) }}
+                    <PiiText
+                      v-if="maskedColumns.has(col) && row[col] !== null && row[col] !== '[REDACTED]'"
+                      :value="renderCell(row[col])"
+                      :target="rowPiiTarget(row)"
+                    />
+                    <template v-else>{{ renderCell(row[col]) }}</template>
                   </td>
                   <td class="text-right whitespace-nowrap">
                     <button class="btn-ghost text-xs" @click="openEdit(row)">수정</button>

@@ -6,6 +6,8 @@ import type { AdminUser, Role } from "@/types/api";
 import Pagination from "@/components/ui/Pagination.vue";
 import Modal from "@/components/ui/Modal.vue";
 import { formatDate } from "@/utils/format";
+import PiiText from "@/components/pii/PiiText.vue";
+import { userPii } from "@/composables/usePiiReveal";
 
 const keyword = ref("");
 const role = ref<Role | "">("");
@@ -144,9 +146,9 @@ onMounted(load);
               <td colspan="8" class="text-center text-ink-400 py-8">데이터가 없습니다.</td>
             </tr>
             <tr v-for="u in rows" :key="u.userId">
-              <td class="font-medium text-ink-700">{{ u.name }}</td>
+              <td class="font-medium text-ink-700"><PiiText :value="u.name" :target="userPii(u.userId)" /></td>
               <td class="tabular-nums text-ink-400 text-xs">{{ u.userId }}</td>
-              <td class="text-ink-500">{{ u.email ?? "-" }}</td>
+              <td class="text-ink-500"><PiiText :value="u.email" :target="userPii(u.userId)" /></td>
               <td class="text-ink-500 uppercase text-xs">{{ u.socialProvider }}</td>
               <td>
                 <span
@@ -214,8 +216,8 @@ onMounted(load);
     >
       <div v-if="editTarget" class="space-y-4 text-sm">
         <div class="rounded-lg bg-ink-50 p-3">
-          <p class="text-ink-700 font-medium">{{ editTarget.name }}</p>
-          <p class="text-ink-400 text-xs">{{ editTarget.email ?? editTarget.userId }}</p>
+          <p class="text-ink-700 font-medium"><PiiText :value="editTarget.name" :target="userPii(editTarget.userId)" /></p>
+          <p class="text-ink-400 text-xs"><PiiText :value="editTarget.email" :target="userPii(editTarget.userId)" :fallback="editTarget.userId" /></p>
         </div>
         <div>
           <label class="label">권한</label>
@@ -240,7 +242,7 @@ onMounted(load);
     >
       <div v-if="restrictTarget" class="space-y-4 text-sm">
         <div class="rounded-lg bg-ink-50 p-3">
-          <p class="text-ink-700 font-medium">{{ restrictTarget.name }}</p>
+          <p class="text-ink-700 font-medium"><PiiText :value="restrictTarget.name" :target="userPii(restrictTarget.userId)" /></p>
           <p class="text-ink-400 text-xs">{{ restrictTarget.userId }}</p>
         </div>
         <p v-if="!restrictTarget.restricted" class="text-ink-600 leading-relaxed">

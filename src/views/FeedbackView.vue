@@ -8,6 +8,8 @@ import type {
   FeedbackQuestionItem,
   FeedbackQuestionType
 } from "@/types/api";
+import PiiText from "@/components/pii/PiiText.vue";
+import { userPii } from "@/composables/usePiiReveal";
 
 type Tab = "questions" | "submissions" | "stats";
 const tab = ref<Tab>("questions");
@@ -510,7 +512,7 @@ onMounted(loadQuestions);
       <div v-for="s in submissions" :key="s.submissionId" class="card p-4 space-y-3">
         <div class="flex items-center justify-between">
           <span class="text-sm font-medium text-ink-800">
-            {{ s.userName ?? "(알 수 없음)" }}
+            <PiiText :value="s.userName" :target="userPii(s.userId)" fallback="(알 수 없음)" />
           </span>
           <span class="text-xs text-ink-400">{{ formatDate(s.createdAt) }}</span>
         </div>

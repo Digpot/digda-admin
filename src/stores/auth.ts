@@ -12,12 +12,32 @@ interface AuthState {
 
 const STORAGE_KEY = "digda-admin-auth";
 
+/**
+ * 토큰은 sessionStorage 에 둔다. localStorage 는 브라우저를 닫아도 남아서, 공용 PC 나
+ * 탈취된 브라우저 프로필에서 관리자 토큰이 그대로 살아 있었다. sessionStorage 는 탭을
+ * 닫으면 사라진다(새 탭에서는 다시 로그인).
+ */
+function storage(): Storage | null {
+  if (typeof window === "undefined") return null;
+  return window.sessionStorage;
+}
+
+/** 예전 버전이 localStorage 에 남긴 토큰을 지운다. */
+function purgeLegacy() {
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* 스토리지 접근이 막힌 환경 — 지울 것도 없다 */
+  }
+}
+
 function readStored(): AuthState {
   if (typeof window === "undefined") {
     return { accessToken: null, refreshToken: null, adminId: null, email: null, name: null };
   }
+  purgeLegacy();
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = storage()?.getItem(STORAGE_KEY);
     if (!raw) throw new Error("empty");
     return JSON.parse(raw) as AuthState;
   } catch {
@@ -61,8 +81,7 @@ export const useAuthStore = defineStore("auth", {
       this.persist();
     },
     persist() {
-      if (typeof window === "undefined") return;
-      window.localStorage.setItem(
+      storage()?.setItem(
         STORAGE_KEY,
         JSON.stringify({
           accessToken: this.accessToken,
@@ -79,9 +98,8 @@ export const useAuthStore = defineStore("auth", {
       this.adminId = null;
       this.email = null;
       this.name = null;
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem(STORAGE_KEY);
-      }
+      storage()?.removeItem(STORAGE_KEY);
+      if (typeof window !== "undefined") purgeLegacy();
     }
   }
 });

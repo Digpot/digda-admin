@@ -10,6 +10,9 @@ import type {
 import Pagination from "@/components/ui/Pagination.vue";
 import Modal from "@/components/ui/Modal.vue";
 import { formatDate } from "@/utils/format";
+import PiiText from "@/components/pii/PiiText.vue";
+import { userPii } from "@/composables/usePiiReveal";
+import { safeUrl } from "@/utils/safeUrl";
 
 type Tab = "content" | "access";
 const tab = ref<Tab>("content");
@@ -315,7 +318,7 @@ onMounted(load);
                 <td>
                   <img
                     v-if="row.imageUrl"
-                    :src="row.imageUrl"
+                    :src="safeUrl(row.imageUrl)"
                     alt=""
                     class="h-12 w-12 rounded-lg object-cover bg-ink-50"
                   />
@@ -382,8 +385,8 @@ onMounted(load);
             </thead>
             <tbody>
               <tr v-for="u in userRows" :key="u.userId">
-                <td class="font-medium text-ink-700">{{ u.name }}</td>
-                <td class="text-ink-500">{{ u.email ?? "-" }}</td>
+                <td class="font-medium text-ink-700"><PiiText :value="u.name" :target="userPii(u.userId)" /></td>
+                <td class="text-ink-500"><PiiText :value="u.email" :target="userPii(u.userId)" /></td>
                 <td class="text-right pr-4">
                   <span
                     v-if="allowedIds.has(u.userId)"
@@ -431,8 +434,8 @@ onMounted(load);
                 <td colspan="4" class="text-center text-ink-400 py-8">허용된 사용자가 없습니다.</td>
               </tr>
               <tr v-for="a in accessRows" :key="a.userId">
-                <td class="font-medium text-ink-700">{{ a.name }}</td>
-                <td class="text-ink-500">{{ a.email ?? "-" }}</td>
+                <td class="font-medium text-ink-700"><PiiText :value="a.name" :target="userPii(a.userId)" /></td>
+                <td class="text-ink-500"><PiiText :value="a.email" :target="userPii(a.userId)" /></td>
                 <td class="tabular-nums text-ink-500 text-xs">{{ formatDate(a.grantedAt) }}</td>
                 <td class="text-right pr-4">
                   <button
@@ -484,7 +487,7 @@ onMounted(load);
         </div>
         <p class="text-xs text-ink-400">이미지는 저장을 누를 때 업로드됩니다.</p>
         <div v-if="previewUrl" class="flex items-center gap-3">
-          <img :src="previewUrl" alt="" class="h-20 w-20 rounded-lg object-cover bg-ink-50" />
+          <img :src="safeUrl(previewUrl)" alt="" class="h-20 w-20 rounded-lg object-cover bg-ink-50" />
           <button class="btn-outline px-3 py-1.5 text-xs" @click="removeImage">
             이미지 제거
           </button>
