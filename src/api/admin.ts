@@ -16,6 +16,8 @@ import type {
   AdminUpdateCharacterRequest,
   AdminUpsertRowRequest,
   CoinGrant,
+  GenerateHighlightRequest,
+  HighlightRunResult,
   AdminUser,
   AdminUserTitle,
   AdminWriteResult,
@@ -269,6 +271,12 @@ export const adminApi = {
     http
       .get<AdminPageResponse<CoinGrant>>(`${API}/events/coin-grants`, { params })
       .then((r) => r.data),
+
+  // ── Highlight (월간 하이라이트 수동 생성) ──
+
+  /** 스케줄러와 같은 로직을 즉시 실행. 확인 모달을 거친 뒤에만 호출한다. */
+  generateHighlights: (body: GenerateHighlightRequest) =>
+    http.post<HighlightRunResult>(`${API}/highlights/generate`, body).then((r) => r.data),
 
   // ── Region Map (지도 채움) ──
 

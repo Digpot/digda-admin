@@ -45,6 +45,7 @@ const menu = [
   { to: "/titles", label: "칭호 부여", icon: TrophyIcon },
   { to: "/region-map", label: "지도 채움", icon: MapIcon },
   { to: "/events", label: "이벤트 관리", icon: GiftIcon },
+  { to: "/highlights", label: "월간 하이라이트", icon: BookOpenIcon },
   { to: "/app-config", label: "대공지 · 개발자 소개", icon: SpeakerWaveIcon },
   { to: "/feedback", label: "피드백 관리", icon: ChatBubbleBottomCenterTextIcon },
   { to: "/diaries", label: "일기 관리", icon: BookOpenIcon },
