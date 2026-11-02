@@ -487,6 +487,8 @@ export interface GenerateHighlightRequest {
   /** true 면 이미 있는 하이라이트도 지우고 다시 만든다(알림 없음) */
   regenerate?: boolean;
   notify?: boolean;
+  /** true 면 생성 없이 이미 있는 하이라이트의 알림만 재발송 */
+  resendOnly?: boolean;
 }
 
 export interface HighlightRunResult {
