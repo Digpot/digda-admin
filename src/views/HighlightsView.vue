@@ -17,6 +17,7 @@ const month = ref(lastMonthKst());
 const groupRoomId = ref<number | null>(null);
 const regenerate = ref(false);
 const notify = ref(true);
+const resendOnly = ref(false);
 
 const confirmOpen = ref(false);
 const running = ref(false);
@@ -80,7 +81,11 @@ async function run() {
 
       <div class="space-y-2">
         <label class="flex items-center gap-2 text-sm text-ink-600">
-          <input v-model="regenerate" type="checkbox" class="h-4 w-4 rounded" />
+          <input v-model="resendOnly" type="checkbox" class="h-4 w-4 rounded" />
+          생성하지 않고, 이미 만들어진 하이라이트의 <b>알림만 다시 보내기</b>
+        </label>
+        <label class="flex items-center gap-2 text-sm text-ink-600">
+          <input v-model="regenerate" type="checkbox" class="h-4 w-4 rounded" :disabled="resendOnly" />
           이미 있는 하이라이트도 지우고 다시 만들기
         </label>
         <label
@@ -138,6 +143,7 @@ async function run() {
         <p>
           <b class="text-ink-800">{{ month }}</b> · {{ scopeLabel }}의 하이라이트를
           {{ regenerate ? "삭제 후 다시" : "" }} 생성합니다.
+          <template v-if="resendOnly"> 이미 만들어진 하이라이트의 알림만 다시 발송합니다(생성 없음).</template>
           <template v-if="!regenerate && notify"> 새로 만들어진 그룹 구성원에게 알림이 갑니다.</template>
         </p>
         <p v-if="regenerate" class="text-rose-600 font-medium">
