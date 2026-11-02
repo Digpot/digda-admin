@@ -478,3 +478,21 @@ export interface RevealPiiRequest extends PiiTarget {
 export interface RevealPiiResponse {
   fields: Record<string, string | null>;
 }
+
+// ── 월간 하이라이트 수동 생성 ──
+export interface GenerateHighlightRequest {
+  /** yyyy-MM. 비우면 서버가 지난달(KST)로 처리 */
+  month?: string;
+  groupRoomId?: number;
+  /** true 면 이미 있는 하이라이트도 지우고 다시 만든다(알림 없음) */
+  regenerate?: boolean;
+  notify?: boolean;
+}
+
+export interface HighlightRunResult {
+  month: string;
+  targetGroups: number;
+  created: number;
+  skipped: number;
+  failed: number;
+}
